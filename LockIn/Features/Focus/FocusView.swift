@@ -106,13 +106,24 @@ struct FocusView: View {
 
     private func handleCustomMinutesInput(_ newValue: String) {
         let digits = newValue.filter { $0.isNumber }
-        if digits != newValue { customMinutesText = digits }
-        if let minutes = Int(digits), (1...600).contains(minutes) {
-            countdownMinutes = minutes
-            if selectedMode == 2 {
-                app.engine.prepare(mode: .countdown,
-                                   countdownSeconds: Double(minutes * 60))
-            }
+        guard let raw = Int(digits) else {
+            // Not a parseable number yet: keep only the digit characters.
+            if digits != newValue { customMinutesText = digits }
+            return
+        }
+        // Clamp into the valid 1...600 range and reflect the clamped value
+        // back into the field instead of silently falling back at start time.
+        let clamped = min(max(raw, 1), 600)
+        countdownMinutes = clamped
+        if digits != newValue && !digits.isEmpty {
+            customMinutesText = digits
+        }
+        if String(clamped) != digits {
+            customMinutesText = String(clamped)
+        }
+        if selectedMode == 2 {
+            app.engine.prepare(mode: .countdown,
+                               countdownSeconds: Double(clamped * 60))
         }
     }
 
