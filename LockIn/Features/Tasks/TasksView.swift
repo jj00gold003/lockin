@@ -3,6 +3,8 @@ import SwiftData
 
 struct TasksView: View {
     @Environment(\.modelContext) private var modelContext
+    private var taskRepo: TaskRepository { TaskRepository(context: modelContext) }
+
     @Query(sort: [SortDescriptor(\TaskItem.priority, order: .reverse),
                   SortDescriptor(\TaskItem.createdAt)])
     private var tasks: [TaskItem]
@@ -56,17 +58,14 @@ struct TasksView: View {
     private func addTask() {
         let title = newTitle.trimmingCharacters(in: .whitespaces)
         guard !title.isEmpty else { return }
-        modelContext.insert(TaskItem(title: title, priority: newPriority))
-        try? modelContext.save()
+        taskRepo.add(title: title, priority: newPriority)
         newTitle = ""
     }
 
     private func taskRow(_ task: TaskItem) -> some View {
         HStack(spacing: Theme.Spacing.s) {
             Button {
-                task.isCompleted.toggle()
-                task.completedAt = task.isCompleted ? .now : nil
-                try? modelContext.save()
+                taskRepo.toggleComplete(task)
             } label: {
                 Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
                     .foregroundStyle(task.isCompleted ? Theme.accent(for: .tasks) : .secondary)
@@ -97,8 +96,7 @@ struct TasksView: View {
         }
         .contextMenu {
             Button(role: .destructive) {
-                modelContext.delete(task)
-                try? modelContext.save()
+                taskRepo.delete(task)
             } label: {
                 Label("common.delete", systemImage: "trash")
             }
