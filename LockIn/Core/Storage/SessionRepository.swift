@@ -8,7 +8,7 @@ struct SessionRepository {
     func start(type: String, taskID: UUID?, at: Date = .now) -> FocusSession {
         let session = FocusSession(type: type, taskID: taskID, startedAt: at)
         context.insert(session)
-        try? context.save()
+        SaveLogger.save(context)
         return session
     }
 
@@ -18,7 +18,7 @@ struct SessionRepository {
         session.endedAt = at
         session.interruptionCount = interruptions
         session.blockCount = blocks
-        try? context.save()
+        SaveLogger.save(context)
     }
 
     func incomplete() -> [FocusSession] {

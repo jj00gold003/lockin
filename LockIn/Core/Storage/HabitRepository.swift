@@ -9,7 +9,7 @@ struct HabitRepository {
              targetPerWeek: Int = 7) -> Habit {
         let habit = Habit(name: name, iconSymbol: iconSymbol, colorName: colorName, targetPerWeek: targetPerWeek)
         context.insert(habit)
-        try? context.save()
+        SaveLogger.save(context)
         return habit
     }
 
@@ -18,7 +18,7 @@ struct HabitRepository {
         let logs = (try? context.fetch(FetchDescriptor<HabitLog>(predicate: #Predicate { $0.habitID == habitID }))) ?? []
         logs.forEach { context.delete($0) }
         context.delete(habit)
-        try? context.save()
+        SaveLogger.save(context)
     }
 
     func habits() -> [Habit] {
@@ -46,7 +46,7 @@ struct HabitRepository {
     func checkIn(habit: Habit, day: Date, note: String = "", calendar: Calendar = .current) {
         guard !isCheckedIn(habit: habit, day: day, calendar: calendar) else { return }
         context.insert(HabitLog(habitID: habit.id, day: normalizedDay(day, calendar: calendar), note: note))
-        try? context.save()
+        SaveLogger.save(context)
     }
 
     func uncheckIn(habit: Habit, day: Date, calendar: Calendar = .current) {
@@ -56,7 +56,7 @@ struct HabitRepository {
             predicate: #Predicate { $0.habitID == habitID && $0.day == target }
         ))) ?? []
         logs.forEach { context.delete($0) }
-        try? context.save()
+        SaveLogger.save(context)
     }
 
     /// Consecutive check-in days; today unchecked does not break the streak (counts back from yesterday)

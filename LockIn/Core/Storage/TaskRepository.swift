@@ -10,19 +10,19 @@ struct TaskRepository {
         let item = TaskItem(title: title, notes: notes, priority: priority,
                             dueDate: dueDate, estimatedPomodoros: estimatedPomodoros)
         context.insert(item)
-        try? context.save()
+        SaveLogger.save(context)
         return item
     }
 
     func toggleComplete(_ item: TaskItem) {
         item.isCompleted.toggle()
         item.completedAt = item.isCompleted ? .now : nil
-        try? context.save()
+        SaveLogger.save(context)
     }
 
     func delete(_ item: TaskItem) {
         context.delete(item)
-        try? context.save()
+        SaveLogger.save(context)
     }
 
     func pendingTasks() -> [TaskItem] {
@@ -38,7 +38,7 @@ struct TaskRepository {
     func addFocusSeconds(_ seconds: TimeInterval, to taskID: UUID) {
         guard let item = find(id: taskID) else { return }
         item.accumulatedSeconds += seconds
-        try? context.save()
+        SaveLogger.save(context)
     }
 
     private func find(id: UUID) -> TaskItem? {
