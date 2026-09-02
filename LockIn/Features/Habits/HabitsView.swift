@@ -61,6 +61,7 @@ struct HabitCard: View {
                         .foregroundStyle(Theme.accent(for: .habits))
                     Text(habit.name).font(.headline)
                     Spacer()
+                    weeklyProgressBadge
                     streakBadge
                     checkInButton
                 }
@@ -74,6 +75,16 @@ struct HabitCard: View {
         return Label("\(streak)", systemImage: "flame.fill")
             .font(.callout.bold())
             .foregroundStyle(streak > 0 ? Theme.accent(for: .focus) : .secondary)
+    }
+
+    /// Weekly completion: check-ins within the current calendar week, x/7
+    private var weeklyProgressBadge: some View {
+        let counts = app.habitRepo.logsByDay(habitID: habit.id, days: 7, today: today)
+        let weekStart = Calendar.current.dateInterval(of: .weekOfYear, for: today)?.start ?? today
+        let done = counts.filter { $0.key >= weekStart && $0.key <= today && $0.value > 0 }.count
+        return Label("\(done)/\(habit.targetPerWeek)", systemImage: "calendar")
+            .font(.callout)
+            .foregroundStyle(.secondary)
     }
 
     private var isCheckedToday: Bool {
