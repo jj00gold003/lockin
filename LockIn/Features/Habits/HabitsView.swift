@@ -5,6 +5,7 @@ struct HabitsView: View {
     @State private var newHabitName = ""
     /// Repositories have no @Published state; bump to force re-render after mutations.
     @State private var refreshTick = 0
+    @FocusState private var newHabitFocused: Bool
 
     var body: some View {
         VStack(spacing: Theme.Spacing.m) {
@@ -28,6 +29,7 @@ struct HabitsView: View {
     private var newHabitBar: some View {
         HStack {
             TextField("habits.add.placeholder", text: $newHabitName)
+                .focused($newHabitFocused)
                 .onSubmit(addHabit)
             Button {
                 addHabit()
@@ -43,6 +45,7 @@ struct HabitsView: View {
         guard !name.isEmpty else { return }
         _ = app.habitRepo.add(name: name)
         newHabitName = ""
+        newHabitFocused = true
         refreshTick += 1
     }
 }
@@ -52,6 +55,7 @@ struct HabitCard: View {
     let habit: Habit
     let onMutate: () -> Void
     @State private var today = Calendar.current.startOfDay(for: .now)
+    @State private var showDeleteConfirm = false
 
     var body: some View {
         Theme.Card {
@@ -64,10 +68,43 @@ struct HabitCard: View {
                     weeklyProgressBadge
                     streakBadge
                     checkInButton
+                    deleteButton
                 }
                 heatmap
             }
         }
+        .contextMenu {
+            Button(role: .destructive) {
+                showDeleteConfirm = true
+            } label: {
+                Label("common.delete", systemImage: "trash")
+            }
+        }
+        .confirmationDialog(
+            Text("habit.delete.confirm.title"),
+            isPresented: $showDeleteConfirm,
+            titleVisibility: .visible
+        ) {
+            Button(String(localized: "common.delete"), role: .destructive) {
+                app.habitRepo.delete(habit)
+                onMutate()
+            }
+            Button(String(localized: "common.cancel"), role: .cancel) {}
+        } message: {
+            Text("\(habit.name) — \(String(localized: "habit.delete.confirm.message"))")
+        }
+    }
+
+    private var deleteButton: some View {
+        Button {
+            showDeleteConfirm = true
+        } label: {
+            Image(systemName: "trash")
+                .foregroundStyle(.secondary)
+                .opacity(0.6)
+        }
+        .buttonStyle(.plain)
+        .help(String(localized: "common.delete"))
     }
 
     private var streakBadge: some View {

@@ -33,6 +33,40 @@ final class RepositoriesTests: XCTestCase {
         XCTAssertTrue(done.isEmpty || done.allSatisfy { $0.id != task.id })
     }
 
+    // Task edit fields are mutated directly on the model (SettingsView pattern)
+    // then saved via SaveLogger; a fresh ModelContext on the same container
+    // proves the edits round-trip through the store.
+    func testTaskEditFieldsPersistRoundTrip() throws {
+        let tasks = TaskRepository(context: context)
+        let task = tasks.add(title: "Draft spec")
+        let due = Date(timeIntervalSince1970: 1_800_000_000)
+
+        task.title = "Draft spec v2"
+        task.notes = "focus on persistence"
+        task.priority = 2
+        task.dueDate = due
+        task.estimatedPomodoros = 4
+        SaveLogger.save(context)
+
+        let freshContext = ModelContext(container)
+        let fetched = try freshContext.fetch(FetchDescriptor<TaskItem>())
+        XCTAssertEqual(fetched.count, 1)
+        let item = try XCTUnwrap(fetched.first)
+        XCTAssertEqual(item.id, task.id)
+        XCTAssertEqual(item.title, "Draft spec v2")
+        XCTAssertEqual(item.notes, "focus on persistence")
+        XCTAssertEqual(item.priority, 2)
+        XCTAssertEqual(item.dueDate, due)
+        XCTAssertEqual(item.estimatedPomodoros, 4)
+
+        // Clearing the due date must round-trip as nil too
+        item.dueDate = nil
+        SaveLogger.save(freshContext)
+        let reloaded = ModelContext(container)
+        let again = try reloaded.fetch(FetchDescriptor<TaskItem>())
+        XCTAssertNil(again.first?.dueDate)
+    }
+
     // MARK: SessionRepository
 
     func testSessionLifecycleAndIncompleteRecovery() {
