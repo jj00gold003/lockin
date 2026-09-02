@@ -50,6 +50,12 @@ final class AppModel: ObservableObject {
                 }
             }
             .store(in: &cancellables)
+        engine.$phase
+            .removeDuplicates()
+            .sink { [weak self] phase in
+                if phase == .idle || phase == .finished { self?.sessionRules = nil }
+            }
+            .store(in: &cancellables)
     }
 
     /// spec 4.3 anti-cheat: lock a rules snapshot when a session starts; mid-session rule edits don't apply

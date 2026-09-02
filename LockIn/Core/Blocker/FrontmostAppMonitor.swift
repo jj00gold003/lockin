@@ -7,6 +7,7 @@ final class FrontmostAppMonitor: ObservableObject {
     private var observers: [NSObjectProtocol] = []
 
     func start() {
+        stop()
         refresh()
         let center = NSWorkspace.shared.notificationCenter
         observers.append(center.addObserver(

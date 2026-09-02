@@ -62,6 +62,10 @@ final class BlockerController: ObservableObject {
     func start(monitor: FrontmostAppMonitor,
                rulesProvider: @escaping () -> [RuleSnapshot],
                sessionActive: @escaping () -> Bool) {
+        reevaluateTimer?.invalidate()
+        reevaluateTimer = nil
+        cancellables.forEach { $0.cancel() }
+        cancellables.removeAll()
         self.monitor = monitor
         self.rulesProvider = rulesProvider
         self.sessionActive = sessionActive
