@@ -47,9 +47,12 @@ struct RootView: View {
 
     @ViewBuilder
     private func placeholder(for section: SidebarSection) -> some View {
-        ContentUnavailableView(
+        switch section {
+        case .focus: FocusView()
+        default: ContentUnavailableView(
             String(localized: String.LocalizationValue(section.labelKey)),
             systemImage: section.icon
         )
+        }
     }
 }

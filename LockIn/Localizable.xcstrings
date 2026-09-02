@@ -1,0 +1,60 @@
+{
+  "sourceLanguage" : "en",
+  "version" : "1.0",
+  "strings" : {
+    "sidebar.focus" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Focus" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "专注" } } } },
+    "sidebar.tasks" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Tasks" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "任务" } } } },
+    "sidebar.habits" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Habits" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "习惯" } } } },
+    "sidebar.stats" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Stats" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "统计" } } } },
+    "focus.mode.pomodoro" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pomodoro" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "番茄钟" } } } },
+    "focus.mode.free" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Free Focus" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "自由专注" } } } },
+    "focus.link.task" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Working on" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在做" } } } },
+    "focus.task.none" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "No task" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "不关联任务" } } } },
+    "focus.start" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Start Focus" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "开始专注" } } } },
+    "focus.abandon" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Abandon" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "放弃" } } } },
+    "focus.resume" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Resume" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "继续" } } } },
+    "focus.skip.break" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Skip Break" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "跳过休息" } } } },
+    "focus.status.pomodoro" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Deep Work" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "深度工作中" } } } },
+    "focus.status.free" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Free Focus" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "自由专注中" } } } },
+    "focus.status.resting" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Break Time" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "休息一下" } } } },
+    "focus.status.paused" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Paused" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已暂停" } } } },
+    "focus.status.done" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Session Ended" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "会话结束" } } } },
+    "focus.status.idle" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Ready" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "准备开始" } } } }
+  }
+}

@@ -39,6 +39,8 @@ public final class TimerEngine: ObservableObject {
         phase == .focusing || phase == .paused || phase == .resting
     }
     public var isBreak: Bool { phase == .resting }
+    /// Read-only exposure of the current phase's planned duration (0 = unlimited, free mode).
+    public var currentPhaseDuration: TimeInterval { phaseDuration }
 
     private let config: PomodoroConfig
     private let now: () -> Date
