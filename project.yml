@@ -1,0 +1,39 @@
+name: LockIn
+options:
+  bundleIdPrefix: com.lockin
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+targets:
+  LockIn:
+    type: application
+    platform: macOS
+    sources: [LockIn]
+    settings:
+      base:
+        SWIFT_VERSION: "5.0"
+        PRODUCT_BUNDLE_IDENTIFIER: com.lockin.app
+        PRODUCT_NAME: LockIn
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: true
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+        CODE_SIGN_STYLE: Automatic
+  LockInTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [LockInTests]
+    settings:
+      base:
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: true
+    dependencies:
+      - target: LockIn
+schemes:
+  LockIn:
+    build:
+      targets:
+        LockIn: all
+        LockInTests: [test]
+    test:
+      targets: [LockInTests]

@@ -1,0 +1,11 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install xcodegen
+      - run: xcodegen generate
+      - run: bash scripts/check-copy.sh
+      - run: xcodebuild -project LockIn.xcodeproj -scheme LockIn test | xcbeautify
