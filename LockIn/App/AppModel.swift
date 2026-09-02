@@ -31,6 +31,60 @@ final class AppModel: ObservableObject {
             .store(in: &cancellables)
     }
 
+    // MARK: - Lifecycle (Task 13: sleep/wake wiring + crash recovery)
+
+    /// Leftover "running" session found at launch; non-nil shows RecoveryView.
+    @Published var pendingRecovery: FocusSession?
+
+    /// Guard so `.task` re-fires (root view reappearing) never add duplicate
+    /// NSWorkspace observers. Observers are added exactly once per AppModel.
+    private var lifecycleStarted = false
+
+    func startLifecycleObservers() {
+        guard !lifecycleStarted else { return }
+        lifecycleStarted = true
+        let center = NSWorkspace.shared.notificationCenter
+        center.addObserver(
+            forName: NSWorkspace.willSleepNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in self?.engine.handleSleep() }
+        }
+        center.addObserver(
+            forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in self?.engine.handleWake() }
+        }
+    }
+
+    /// Launch-time check: any session still marked "running" means the app
+    /// crashed or was force-quit mid-focus; surface it for recovery.
+    func checkPendingRecovery() {
+        pendingRecovery = sessionRepo.incomplete().first
+    }
+
+    func resolveRecovery(_ choice: RecoveryChoice) {
+        guard let session = pendingRecovery else { return }
+        switch choice {
+        case .continueWork:
+            // The crashed run can no longer be measured reliably; settle it as
+            // abandoned, then jump straight into a new free focus on the same task.
+            sessionRepo.resolve(id: session.id, to: "abandoned",
+                                endedAt: session.startedAt.addingTimeInterval(1))
+            focus.selectedTaskID = session.taskID
+            engine.startFreeFocus()
+        case .markCompleted:
+            // Settle without counting duration (endedAt == startedAt).
+            sessionRepo.resolve(id: session.id, to: "completed",
+                                endedAt: session.startedAt)
+        case .discard:
+            sessionRepo.resolve(id: session.id, to: "abandoned",
+                                endedAt: session.startedAt)
+        }
+        pendingRecovery = nil
+    }
+
+    enum RecoveryChoice { case continueWork, markCompleted, discard }
+
     // MARK: - Blocker (Task 9: soft block overlay)
 
     let monitor = FrontmostAppMonitor()

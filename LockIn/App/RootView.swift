@@ -27,7 +27,8 @@ struct RootView: View {
     @State private var selection: SidebarSection = .focus
 
     var body: some View {
-        NavigationSplitView {
+        ZStack {
+            NavigationSplitView {
             List(selection: $selection) {
                 ForEach(SidebarSection.allCases) { section in
                     Label {
@@ -48,8 +49,10 @@ struct RootView: View {
                 }
             }
             .navigationSplitViewColumnWidth(200)
-        } detail: {
-            detail(for: selection)
+            } detail: {
+                detail(for: selection)
+            }
+            RecoveryView()
         }
     }
 
