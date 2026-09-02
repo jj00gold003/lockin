@@ -6,6 +6,10 @@ import AppKit
 /// App-level dependency container: engine + repositories + per-feature ViewModels.
 @MainActor
 final class AppModel: ObservableObject {
+    /// Reachable from non-SwiftUI entry points (e.g. the AppDelegate's
+    /// quit-confirmation hook).
+    static weak var shared: AppModel?
+
     let engine: TimerEngine
     let taskRepo: TaskRepository
     let sessionRepo: SessionRepository
@@ -29,6 +33,10 @@ final class AppModel: ObservableObject {
         engine.objectWillChange
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
+
+        // Expose the instance once fully initialized so the AppDelegate can
+        // reach it from applicationShouldTerminate.
+        AppModel.shared = self
     }
 
     // MARK: - Lifecycle (Task 13: sleep/wake wiring + crash recovery)
@@ -73,12 +81,12 @@ final class AppModel: ObservableObject {
             focus.selectedTaskID = session.taskID
             engine.startFreeFocus()
         case .markCompleted:
-            // Settle without counting duration (endedAt == startedAt).
+            // Settle without counting duration (+1s, consistent with continueWork).
             sessionRepo.resolve(id: session.id, to: "completed",
-                                endedAt: session.startedAt)
+                                endedAt: session.startedAt.addingTimeInterval(1))
         case .discard:
             sessionRepo.resolve(id: session.id, to: "abandoned",
-                                endedAt: session.startedAt)
+                                endedAt: session.startedAt.addingTimeInterval(1))
         }
         pendingRecovery = nil
     }

@@ -1,8 +1,34 @@
 import SwiftUI
 import SwiftData
+import AppKit
+
+/// Spec 4.3: confirm before quitting while a focus session is active, so a
+/// regular quit never silently ends a running session.
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard let app = AppModel.shared, app.engine.isSessionActive else { return .terminateNow }
+        let alert = NSAlert()
+        alert.messageText = String(localized: "quit.confirm.title")
+        alert.informativeText = String(localized: "quit.confirm.subtitle")
+        alert.addButton(withTitle: String(localized: "quit.confirm.quit"))
+        alert.addButton(withTitle: String(localized: "common.cancel"))
+        if let window = NSApp.mainWindow {
+            alert.beginSheetModal(for: window) { response in
+                NSApp.reply(toApplicationShouldTerminate: response == .alertFirstButtonReturn)
+            }
+            return .terminateLater
+        }
+        // No key window (e.g. main window closed, menu-bar-only use): sheeting
+        // on a throwaway NSWindow() is unsupported, so run a synchronous modal
+        // on the main thread and reply directly.
+        let response = alert.runModal()
+        return response == .alertFirstButtonReturn ? .terminateNow : .terminateCancel
+    }
+}
 
 @main
 struct LockInApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     let container: ModelContainer
     @StateObject private var app: AppModel
 
