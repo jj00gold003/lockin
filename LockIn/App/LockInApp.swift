@@ -21,6 +21,11 @@ struct LockInApp: App {
         }
     }
 
+    private var menuBarTime: String {
+        let s = Int(app.engine.remaining.rounded())
+        return String(format: "%02d:%02d", s / 60, s % 60)
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()
@@ -30,6 +35,19 @@ struct LockInApp: App {
                 .task { app.startBlocker() }
         }
         .windowStyle(.hiddenTitleBar)
+
+        MenuBarExtra {
+            MenuBarPanel()
+                .environmentObject(app)
+                .modelContainer(container)
+        } label: {
+            if app.engine.isSessionActive {
+                Text(menuBarTime)
+            } else {
+                Image(systemName: "lock.circle")
+            }
+        }
+        .menuBarExtraStyle(.window)
 
         Settings {
             SettingsView()
