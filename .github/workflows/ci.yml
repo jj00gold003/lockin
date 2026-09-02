@@ -8,4 +8,4 @@ jobs:
       - run: brew install xcodegen
       - run: xcodegen generate
       - run: bash scripts/check-copy.sh
-      - run: xcodebuild -project LockIn.xcodeproj -scheme LockIn test | xcbeautify
+      - run: set -o pipefail && xcodebuild -project LockIn.xcodeproj -scheme LockIn test | xcbeautify
