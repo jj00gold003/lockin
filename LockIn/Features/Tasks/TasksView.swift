@@ -25,17 +25,19 @@ struct TasksView: View {
         VStack(spacing: Theme.Spacing.m) {
             newTaskBar
             if tasks.isEmpty {
-                ContentUnavailableView("tasks.empty", systemImage: "checklist")
+                EmptyStateView(icon: "checklist", titleKey: "tasks.empty",
+                               tint: Theme.accent(for: .tasks))
             } else {
-                List {
-                    ForEach(orderedTasks) { task in
-                        TaskRow(task: task,
-                                onToggle: { taskRepo.toggleComplete(task) },
-                                onEdit: { editingTask = task },
-                                onDelete: { taskRepo.delete(task) })
+                ScrollView {
+                    LazyVStack(spacing: Theme.Spacing.s) {
+                        ForEach(orderedTasks) { task in
+                            TaskRow(task: task,
+                                    onToggle: { taskRepo.toggleComplete(task) },
+                                    onEdit: { editingTask = task },
+                                    onDelete: { taskRepo.delete(task) })
+                        }
                     }
                 }
-                .listStyle(.inset)
             }
         }
         .padding(Theme.Spacing.m)
@@ -44,24 +46,50 @@ struct TasksView: View {
         }
     }
 
+    private var canAdd: Bool {
+        !newTitle.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
     private var newTaskBar: some View {
         HStack(spacing: Theme.Spacing.s) {
             TextField("tasks.add.placeholder", text: $newTitle)
+                .textFieldStyle(.plain)
+                .font(Theme.Typography.body)
                 .focused($newTaskFocused)
                 .onSubmit(addTask)
-            Picker("", selection: $newPriority) {
-                Text("tasks.priority.high").tag(2)
-                Text("tasks.priority.medium").tag(1)
-                Text("tasks.priority.low").tag(0)
-            }
-            .frame(width: 110)
+
+            PillPicker(options: [
+                PillOption("tasks.priority.high", tag: 2),
+                PillOption("tasks.priority.medium", tag: 1),
+                PillOption("tasks.priority.low", tag: 0),
+            ], selection: $newPriority, tint: Theme.accent(for: .tasks), compact: true)
+
             Button {
                 addTask()
             } label: {
-                Image(systemName: "plus.circle.fill")
+                Image(systemName: "plus")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 26, height: 26)
+                    .background(
+                        Circle().fill(canAdd
+                                      ? AnyShapeStyle(Theme.accent(for: .tasks))
+                                      : AnyShapeStyle(Color.primary.opacity(0.15)))
+                    )
             }
-            .disabled(newTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+            .buttonStyle(.plain)
+            .disabled(!canAdd)
         }
+        .padding(.horizontal, Theme.Spacing.m)
+        .padding(.vertical, 6)
+        .background(.background.secondary, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+        .overlay {
+            RoundedRectangle(cornerRadius: Theme.Radius.control)
+                .strokeBorder(newTaskFocused
+                              ? Theme.accent(for: .tasks).opacity(0.45)
+                              : Color.clear)
+        }
+        .animation(Theme.Motion.hover, value: newTaskFocused)
     }
 
     /// Keep focus in the title field so several tasks can be entered back to back.
@@ -88,6 +116,7 @@ private struct TaskRow: View {
         HStack(spacing: Theme.Spacing.s) {
             Button(action: onToggle) {
                 Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 17))
                     .foregroundStyle(task.isCompleted ? Theme.accent(for: .tasks) : .secondary)
             }
             .buttonStyle(.plain)
@@ -100,10 +129,12 @@ private struct TaskRow: View {
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(task.title)
+                            .font(Theme.Typography.body)
                             .strikethrough(task.isCompleted)
+                            .foregroundStyle(task.isCompleted ? Color.secondary : Color.primary)
                         if task.accumulatedSeconds > 0 {
                             Text(String(format: String(localized: "tasks.focused"), Int(task.accumulatedSeconds / 60)))
-                                .font(.caption)
+                                .font(Theme.Typography.caption)
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -112,7 +143,7 @@ private struct TaskRow: View {
 
                     if let due = task.dueDate {
                         Text(due, style: .date)
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -122,11 +153,19 @@ private struct TaskRow: View {
 
             Button(action: onDelete) {
                 Image(systemName: "trash")
+                    .font(.system(size: 13))
                     .foregroundStyle(.secondary)
                     .opacity(hovered ? 1 : 0)
             }
             .buttonStyle(.plain)
         }
+        .padding(12)
+        .background(.background.secondary, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+        .shadow(color: .black.opacity(hovered ? 0.12 : 0.06),
+                radius: hovered ? 12 : 8,
+                y: 2)
+        .offset(y: hovered ? -1 : 0)
+        .animation(Theme.Motion.hover, value: hovered)
         .onHover { hovered = $0 }
         .contextMenu {
             Button(role: .destructive, action: onDelete) {
@@ -160,7 +199,7 @@ struct TaskEditSheet: View {
 
     var body: some View {
         Form {
-            Section("task.edit") {
+            Section {
                 TextField("", text: $title)
                 VStack(alignment: .leading, spacing: 4) {
                     Text("task.notes")
@@ -178,17 +217,21 @@ struct TaskEditSheet: View {
                     Text("tasks.priority.medium").tag(1)
                     Text("tasks.priority.low").tag(0)
                 }
+            } header: {
+                Text("task.edit")
             }
 
-            Section("task.due") {
+            Section {
                 Toggle("task.due.has", isOn: $hasDue)
                 if hasDue {
                     DatePicker("task.due", selection: $dueDate,
                                displayedComponents: .date)
                 }
+            } header: {
+                Text("task.due")
             }
 
-            Section("task.estimated") {
+            Section {
                 Stepper(value: $estimated, in: 0...99) {
                     HStack {
                         Text("task.estimated")
@@ -197,6 +240,8 @@ struct TaskEditSheet: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+            } header: {
+                Text("task.estimated")
             }
 
             Section {

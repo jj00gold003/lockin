@@ -3,62 +3,43 @@ import Charts
 
 struct StatsView: View {
     @EnvironmentObject private var app: AppModel
-    @State private var refreshTick = 0
+
+    // Data snapshots refreshed on a 30s timer. Assigning into @State updates
+    // the views in place WITHOUT rebuilding view identity — the previous
+    // `.id(refreshTick)` on the ScrollView reset the scroll position each tick.
+    @State private var todaySeconds: TimeInterval = 0
+    @State private var weekSeconds: TimeInterval = 0
+    @State private var completionRate: Double?
+    @State private var focusByDay: [(day: Date, seconds: TimeInterval)] = []
+    @State private var blockEvents: [(day: Date, count: Int)] = []
 
     var body: some View {
         ScrollView {
             VStack(spacing: Theme.Spacing.m) {
                 summaryRow
-                Theme.Card {
-                    Chart(app.sessionRepo.focusSecondsByDay(days: 7), id: \.day) { point in
-                        BarMark(
-                            x: .value("stats.day", point.day, unit: .day),
-                            y: .value("stats.minutes", point.seconds / 60)
-                        )
-                        .foregroundStyle(Theme.accent(for: .focus).gradient)
-                        .cornerRadius(4)
-                    }
-                    .frame(height: 180)
-                }
-                Theme.Card {
-                    Chart(blockEvents, id: \.day) { point in
-                        LineMark(
-                            x: .value("stats.day", point.day, unit: .day),
-                            y: .value("stats.count", point.count)
-                        )
-                        .foregroundStyle(Theme.accent(for: .tasks))
-                    }
-                    .frame(height: 140)
-                }
+                focusChartCard
+                blockChartCard
             }
             .padding(Theme.Spacing.m)
         }
-        .id(refreshTick)
+        .onAppear(perform: refresh)
         .onReceive(Timer.publish(every: 30, on: .main, in: .common).autoconnect()) { _ in
-            refreshTick += 1
+            refresh()
         }
     }
 
-    private var summaryRow: some View {
-        HStack(spacing: Theme.Spacing.m) {
-            statCard(value: format(app.sessionRepo.focusSeconds(since: Calendar.current.startOfDay(for: .now))),
-                     labelKey: "stats.today")
-            statCard(value: format(app.sessionRepo.focusSeconds(since: weekStart)),
-                     labelKey: "stats.week")
-            statCard(value: rateText, labelKey: "stats.completion")
-        }
+    // MARK: - Snapshots
+
+    /// Recomputes all displayed values and assigns them into @State.
+    private func refresh() {
+        todaySeconds = app.sessionRepo.focusSeconds(since: Calendar.current.startOfDay(for: .now))
+        weekSeconds = app.sessionRepo.focusSeconds(since: weekStart)
+        completionRate = app.sessionRepo.completionRate(days: 7)
+        focusByDay = app.sessionRepo.focusSecondsByDay(days: 7)
+        blockEvents = computeBlockEvents()
     }
 
-    private var rateText: String {
-        guard let rate = app.sessionRepo.completionRate(days: 7) else { return "–" }
-        return String(format: "%.0f%%", rate * 100)
-    }
-
-    private var weekStart: Date {
-        Calendar.current.dateInterval(of: .weekOfYear, for: .now)?.start ?? .now
-    }
-
-    private var blockEvents: [(day: Date, count: Int)] {
+    private func computeBlockEvents() -> [(day: Date, count: Int)] {
         let cal = Calendar.current
         let events = BlockLogStore.readAll()
         let grouped = Dictionary(grouping: events) { cal.startOfDay(for: $0.timestamp) }
@@ -70,15 +51,59 @@ struct StatsView: View {
         }.reversed())
     }
 
-    private func statCard(value: String, labelKey: String) -> some View {
-        Theme.Card {
-            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                Text(value).font(.system(size: 28, weight: .bold, design: .rounded)).monospacedDigit()
-                Text(String(localized: String.LocalizationValue(labelKey)))
-                    .font(.caption).foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+    // MARK: - Pieces
+
+    private var summaryRow: some View {
+        HStack(spacing: Theme.Spacing.m) {
+            StatTile(value: format(todaySeconds), labelKey: "stats.today",
+                     icon: "timer", tint: Theme.accent(for: .focus))
+            StatTile(value: format(weekSeconds), labelKey: "stats.week",
+                     icon: "calendar", tint: Theme.accent(for: .tasks))
+            StatTile(value: rateText, labelKey: "stats.completion",
+                     icon: "checkmark.seal", tint: Theme.accent(for: .habits))
         }
+    }
+
+    private var focusChartCard: some View {
+        Theme.Card {
+            VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+                SectionHeader(titleKey: "stats.chart.focus")
+                Chart(focusByDay, id: \.day) { point in
+                    BarMark(
+                        x: .value("stats.day", point.day, unit: .day),
+                        y: .value("stats.minutes", point.seconds / 60)
+                    )
+                    .foregroundStyle(Theme.accent(for: .focus).gradient)
+                    .cornerRadius(4)
+                }
+                .frame(height: 180)
+            }
+        }
+    }
+
+    private var blockChartCard: some View {
+        Theme.Card {
+            VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+                SectionHeader(titleKey: "stats.chart.blocked")
+                Chart(blockEvents, id: \.day) { point in
+                    LineMark(
+                        x: .value("stats.day", point.day, unit: .day),
+                        y: .value("stats.count", point.count)
+                    )
+                    .foregroundStyle(Theme.accent(for: .tasks))
+                }
+                .frame(height: 140)
+            }
+        }
+    }
+
+    private var rateText: String {
+        guard let rate = completionRate else { return "–" }
+        return String(format: "%.0f%%", rate * 100)
+    }
+
+    private var weekStart: Date {
+        Calendar.current.dateInterval(of: .weekOfYear, for: .now)?.start ?? .now
     }
 
     private func format(_ seconds: TimeInterval) -> String {

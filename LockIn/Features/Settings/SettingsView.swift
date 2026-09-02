@@ -14,7 +14,7 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("settings.blacklist") {
+            Section {
                 Table(rules, selection: $selectedRuleIDs) {
                     TableColumn("settings.blacklist.app") { rule in
                         Text(rule.appDisplayName)
@@ -49,17 +49,21 @@ struct SettingsView: View {
                     }
                     .disabled(selectedRuleIDs.isEmpty)
                 }
+            } header: {
+                SectionHeader(titleKey: "settings.blacklist")
             }
 
             // Schedule editor: shown only for the selected rule when its
             // scope is "scheduled".
             if let selectedRule, selectedRule.scope == "scheduled" {
-                Section("settings.schedule.editor") {
+                Section {
                     scheduleEditor(for: selectedRule)
+                } header: {
+                    SectionHeader(titleKey: "settings.schedule.editor")
                 }
             }
 
-            Section("settings.websites.title") {
+            Section {
                 ForEach(siteRules.sorted { $0.domain < $1.domain }) { site in
                     HStack {
                         Text(site.domain)
@@ -103,9 +107,11 @@ struct SettingsView: View {
                 Text("settings.websites.secureDNS.note")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            } header: {
+                SectionHeader(titleKey: "settings.websites.title")
             }
 
-            Section("settings.accessibility.title") {
+            Section {
                 HStack {
                     Circle()
                         .fill(accessibilityGranted ? .green : .orange)
@@ -123,6 +129,8 @@ struct SettingsView: View {
                         }
                     }
                 }
+            } header: {
+                SectionHeader(titleKey: "settings.accessibility.title")
             }
         }
         .formStyle(.grouped)

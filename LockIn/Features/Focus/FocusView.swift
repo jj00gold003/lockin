@@ -20,7 +20,7 @@ struct FocusView: View {
     init() {}
 
     var body: some View {
-        VStack(spacing: Theme.Spacing.xl) {
+        VStack(spacing: Theme.Spacing.l) {
             sessionPicker
             if selectedMode == 2 {
                 countdownDurationChooser
@@ -29,8 +29,9 @@ struct FocusView: View {
             taskPicker
             controls
         }
+        .frame(maxWidth: 520)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(Theme.Spacing.xl)
+        .padding(Theme.Spacing.l)
         .onAppear(perform: syncSelectionOnAppear)
         .onChange(of: selectedMode) { _, newValue in
             previewMode(newValue)
@@ -66,38 +67,49 @@ struct FocusView: View {
     }
 
     private var sessionPicker: some View {
-        Picker("", selection: $selectedMode) {
-            Text("focus.mode.pomodoro").tag(0)
-            Text("focus.mode.free").tag(1)
-            Text("focus.mode.countdown").tag(2)
-        }
-        .pickerStyle(.segmented)
-        .frame(width: 340)
-        .disabled(app.engine.isSessionActive)
+        PillPicker(options: [
+            PillOption("focus.mode.pomodoro", tag: 0),
+            PillOption("focus.mode.free", tag: 1),
+            PillOption("focus.mode.countdown", tag: 2),
+        ], selection: $selectedMode, tint: Theme.accent(for: .focus),
+           disabled: app.engine.isSessionActive)
     }
 
     private var countdownDurationChooser: some View {
         HStack(spacing: Theme.Spacing.s) {
             ForEach([15, 30, 45, 60], id: \.self) { minutes in
-                Button("\(minutes)") {
+                Chip(text: "\(minutes)",
+                     isSelected: isPresetSelected(minutes),
+                     tint: Theme.accent(for: .focus)) {
                     countdownMinutes = minutes
                     customMinutesText = ""
                     app.engine.prepare(mode: .countdown,
                                        countdownSeconds: Double(minutes * 60))
                 }
-                .buttonStyle(.bordered)
-                .tint(isPresetSelected(minutes) ? Theme.accent(for: .focus) : .secondary)
             }
+            customMinutesField
+        }
+    }
+
+    private var customMinutesField: some View {
+        HStack(spacing: 3) {
             TextField("focus.countdown.minutes", text: $customMinutesText)
-                .frame(width: 70)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.plain)
                 .multilineTextAlignment(.center)
+                .font(Theme.Typography.caption.weight(.semibold))
+                .monospacedDigit()
+                .frame(width: 40)
                 .onChange(of: customMinutesText) { _, newValue in
                     handleCustomMinutesInput(newValue)
                 }
             Text("focus.countdown.minutes")
+                .font(Theme.Typography.caption)
                 .foregroundStyle(.secondary)
         }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.primary.opacity(0.06),
+                    in: RoundedRectangle(cornerRadius: Theme.Radius.chip))
     }
 
     private func isPresetSelected(_ preset: Int) -> Bool {
@@ -146,51 +158,59 @@ struct FocusView: View {
     }
 
     private var taskPicker: some View {
-        Picker("focus.link.task", selection: taskBinding) {
-            Text("focus.task.none").tag(UUID?.none)
-            ForEach(pendingTasks) { task in
-                Text(task.title).tag(UUID?.some(task.id))
+        HStack(spacing: Theme.Spacing.xs) {
+            Image(systemName: "link")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(Theme.accent(for: .focus))
+            Picker("focus.link.task", selection: taskBinding) {
+                Text("focus.task.none").tag(UUID?.none)
+                ForEach(pendingTasks) { task in
+                    Text(task.title).tag(UUID?.some(task.id))
+                }
             }
+            .labelsHidden()
+            .font(Theme.Typography.body)
+            .frame(width: 300)
         }
-        .frame(width: 320)
+        .padding(.horizontal, Theme.Spacing.m)
+        .padding(.vertical, 6)
+        .background(Color.primary.opacity(0.05), in: Capsule())
     }
 
     private var controls: some View {
         HStack(spacing: Theme.Spacing.m) {
             switch app.engine.phase {
             case .idle, .finished:
-                Button {
+                PrimaryButton(titleKey: "focus.start",
+                              icon: "play.fill",
+                              tint: Theme.accent(for: .focus)) {
                     switch selectedMode {
                     case 1: app.engine.startFreeFocus()
                     case 2: app.engine.startCountdown(seconds: Double(effectiveMinutes * 60))
                     default: app.engine.startPomodoro()
                     }
-                } label: {
-                    Label("focus.start", systemImage: "play.fill")
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.accent(for: .focus))
             case .focusing, .resting:
                 Button(role: .destructive) {
                     showAbandonConfirm = true
                 } label: {
                     Label("focus.abandon", systemImage: "stop.fill")
                 }
+                .buttonStyle(.bordered)
                 if app.engine.isBreak {
                     Button {
                         app.engine.skipBreak()
                     } label: {
                         Label("focus.skip.break", systemImage: "forward.end.fill")
                     }
+                    .buttonStyle(.bordered)
                 }
             case .paused:
-                Button {
+                PrimaryButton(titleKey: "focus.resume",
+                              icon: "play.fill",
+                              tint: Theme.accent(for: .focus)) {
                     app.engine.resume()
-                } label: {
-                    Label("focus.resume", systemImage: "play.fill")
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.accent(for: .focus))
             }
         }
     }
@@ -203,23 +223,32 @@ struct TimerRingView: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(.quaternary, lineWidth: 12)
+                .stroke(Color.primary.opacity(0.06), lineWidth: 14)
             Circle()
                 .trim(from: 0, to: progress)
-                .stroke(tint, style: StrokeStyle(lineWidth: 12, lineCap: .round))
+                .stroke(
+                    LinearGradient(colors: [tint, tint.opacity(0.7)],
+                                   startPoint: .top, endPoint: .bottom),
+                    style: StrokeStyle(lineWidth: 14, lineCap: .round)
+                )
                 .rotationEffect(.degrees(-90))
                 .animation(.linear(duration: 1), value: progress)
             VStack(spacing: Theme.Spacing.xs) {
                 Text(timeText)
-                    .font(.system(size: 56, weight: .semibold, design: .rounded))
+                    .font(Theme.Typography.display)
                     .monospacedDigit()
                     .contentTransition(.numericText())
+                    .foregroundStyle(.primary)
                 Text(String(localized: String.LocalizationValue(statusText)))
-                    .font(.headline)
+                    .font(Theme.Typography.headline)
                     .foregroundStyle(.secondary)
             }
+            .padding(.horizontal, 44)
         }
-        .frame(width: 280, height: 280)
+        // Square ring that shrinks gracefully when vertical space is tight
+        // (e.g. countdown chips visible at the window's minimum height).
+        .aspectRatio(1, contentMode: .fit)
+        .frame(maxWidth: 280)
     }
 
     private var progress: Double {
