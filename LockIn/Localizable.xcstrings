@@ -79,6 +79,12 @@
       "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "还没有习惯，养成第一个吧。" } } } },
     "habits.add.placeholder" : { "localizations" : {
       "en" : { "stringUnit" : { "state" : "translated", "value" : "New habit name" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "新习惯名称" } } } }
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "新习惯名称" } } } },
+    "focus.blocked.title" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "You are in a focus session" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "你正在专注中" } } } },
+    "focus.blocked.subtitle" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "This app is blocked. Come back after the session." } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "此应用已被屏蔽，会话结束后再回来。" } } } }
   }
 }

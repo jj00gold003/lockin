@@ -27,6 +27,7 @@ struct LockInApp: App {
                 .modelContainer(container)
                 .environmentObject(app)
                 .frame(minWidth: 860, minHeight: 560)
+                .task { app.startBlocker() }
         }
         .windowStyle(.hiddenTitleBar)
     }
