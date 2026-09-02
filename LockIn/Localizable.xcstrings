@@ -55,6 +55,24 @@
       "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "会话结束" } } } },
     "focus.status.idle" : { "localizations" : {
       "en" : { "stringUnit" : { "state" : "translated", "value" : "Ready" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "准备开始" } } } }
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "准备开始" } } } },
+    "tasks.empty" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "No tasks yet. Add your first one." } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "还没有任务，添加第一个吧。" } } } },
+    "tasks.add.placeholder" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "What needs doing?" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "要做什么？" } } } },
+    "tasks.priority.high" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "High" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "高" } } } },
+    "tasks.priority.medium" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Medium" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "中" } } } },
+    "tasks.priority.low" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Low" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "低" } } } },
+    "common.delete" : { "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "删除" } } } }
   }
 }
