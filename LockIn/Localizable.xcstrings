@@ -1,90 +1,694 @@
 {
-  "sourceLanguage" : "en",
-  "version" : "1.0",
-  "strings" : {
-    "sidebar.focus" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Focus" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "专注" } } } },
-    "sidebar.tasks" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Tasks" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "任务" } } } },
-    "sidebar.habits" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Habits" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "习惯" } } } },
-    "sidebar.stats" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Stats" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "统计" } } } },
-    "focus.mode.pomodoro" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Pomodoro" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "番茄钟" } } } },
-    "focus.mode.free" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Free Focus" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "自由专注" } } } },
-    "focus.link.task" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Working on" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在做" } } } },
-    "focus.task.none" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "No task" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "不关联任务" } } } },
-    "focus.start" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Start Focus" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "开始专注" } } } },
-    "focus.abandon" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Abandon" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "放弃" } } } },
-    "focus.resume" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Resume" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "继续" } } } },
-    "focus.skip.break" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Skip Break" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "跳过休息" } } } },
-    "focus.status.pomodoro" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Deep Work" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "深度工作中" } } } },
-    "focus.status.free" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Free Focus" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "自由专注中" } } } },
-    "focus.status.resting" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Break Time" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "休息一下" } } } },
-    "focus.status.paused" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Paused" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已暂停" } } } },
-    "focus.status.done" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Session Ended" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "会话结束" } } } },
-    "focus.status.idle" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Ready" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "准备开始" } } } },
-    "tasks.empty" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "No tasks yet. Add your first one." } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "还没有任务，添加第一个吧。" } } } },
-    "tasks.add.placeholder" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "What needs doing?" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "要做什么？" } } } },
-    "tasks.priority.high" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "High" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "高" } } } },
-    "tasks.priority.medium" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Medium" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "中" } } } },
-    "tasks.priority.low" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Low" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "低" } } } },
-    "common.delete" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "删除" } } } },
-    "habits.empty" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "No habits yet. Build your first one." } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "还没有习惯，养成第一个吧。" } } } },
-    "habits.add.placeholder" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "New habit name" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "新习惯名称" } } } },
-    "focus.blocked.title" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "You are in a focus session" } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "你正在专注中" } } } },
-    "focus.blocked.subtitle" : { "localizations" : {
-      "en" : { "stringUnit" : { "state" : "translated", "value" : "This app is blocked. Come back after the session." } },
-      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "此应用已被屏蔽，会话结束后再回来。" } } } }
+  "sourceLanguage": "en",
+  "version": "1.0",
+  "strings": {
+    "sidebar.focus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "专注"
+          }
+        }
+      }
+    },
+    "sidebar.tasks": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "任务"
+          }
+        }
+      }
+    },
+    "sidebar.habits": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habits"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "习惯"
+          }
+        }
+      }
+    },
+    "sidebar.stats": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stats"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "统计"
+          }
+        }
+      }
+    },
+    "focus.mode.pomodoro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomodoro"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "番茄钟"
+          }
+        }
+      }
+    },
+    "focus.mode.free": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free Focus"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自由专注"
+          }
+        }
+      }
+    },
+    "focus.link.task": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Working on"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在做"
+          }
+        }
+      }
+    },
+    "focus.task.none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No task"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不关联任务"
+          }
+        }
+      }
+    },
+    "focus.start": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start Focus"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开始专注"
+          }
+        }
+      }
+    },
+    "focus.abandon": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abandon"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "放弃"
+          }
+        }
+      }
+    },
+    "focus.resume": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resume"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "继续"
+          }
+        }
+      }
+    },
+    "focus.skip.break": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip Break"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跳过休息"
+          }
+        }
+      }
+    },
+    "focus.status.pomodoro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deep Work"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "深度工作中"
+          }
+        }
+      }
+    },
+    "focus.status.free": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free Focus"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自由专注中"
+          }
+        }
+      }
+    },
+    "focus.status.resting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Break Time"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "休息一下"
+          }
+        }
+      }
+    },
+    "focus.status.paused": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paused"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已暂停"
+          }
+        }
+      }
+    },
+    "focus.status.done": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session Ended"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "会话结束"
+          }
+        }
+      }
+    },
+    "focus.status.idle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备开始"
+          }
+        }
+      }
+    },
+    "tasks.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No tasks yet. Add your first one."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还没有任务，添加第一个吧。"
+          }
+        }
+      }
+    },
+    "tasks.add.placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What needs doing?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要做什么？"
+          }
+        }
+      }
+    },
+    "tasks.priority.high": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "高"
+          }
+        }
+      }
+    },
+    "tasks.priority.medium": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Medium"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中"
+          }
+        }
+      }
+    },
+    "tasks.priority.low": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Low"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "低"
+          }
+        }
+      }
+    },
+    "common.delete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除"
+          }
+        }
+      }
+    },
+    "habits.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No habits yet. Build your first one."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还没有习惯，养成第一个吧。"
+          }
+        }
+      }
+    },
+    "habits.add.placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New habit name"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新习惯名称"
+          }
+        }
+      }
+    },
+    "focus.blocked.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are in a focus session"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你正在专注中"
+          }
+        }
+      }
+    },
+    "focus.blocked.subtitle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This app is blocked. Come back after the session."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此应用已被屏蔽，会话结束后再回来。"
+          }
+        }
+      }
+    },
+    "settings.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设置"
+          }
+        }
+      }
+    },
+    "settings.blacklist": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocklist"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "屏蔽名单"
+          }
+        }
+      }
+    },
+    "settings.blacklist.app": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用"
+          }
+        }
+      }
+    },
+    "settings.blacklist.level": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Level"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "级别"
+          }
+        }
+      }
+    },
+    "settings.blacklist.level.soft": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cover"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "遮挡"
+          }
+        }
+      }
+    },
+    "settings.blacklist.level.hard": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minimize"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最小化"
+          }
+        }
+      }
+    },
+    "settings.blacklist.scope": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生效时段"
+          }
+        }
+      }
+    },
+    "settings.blacklist.scope.session": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "During sessions"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仅专注会话中"
+          }
+        }
+      }
+    },
+    "settings.blacklist.scope.scheduled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scheduled"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "计划时段"
+          }
+        }
+      }
+    },
+    "settings.blacklist.enabled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "启用"
+          }
+        }
+      }
+    },
+    "settings.blacklist.add": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add App…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加应用…"
+          }
+        }
+      }
+    },
+    "settings.accessibility.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hard Block (Accessibility)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "硬拦截（辅助功能权限）"
+          }
+        }
+      }
+    },
+    "settings.accessibility.description": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allows LockIn to minimize distracting apps during focus sessions. All processing stays on this Mac."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允许 LockIn 在专注会话中最小化分心应用。所有处理都在本机完成。"
+          }
+        }
+      }
+    },
+    "settings.accessibility.grant": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grant"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "去授权"
+          }
+        }
+      }
+    },
+    "settings.accessibility.granted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Granted"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已授权"
+          }
+        }
+      }
+    }
   }
 }

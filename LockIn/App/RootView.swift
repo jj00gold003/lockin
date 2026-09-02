@@ -38,6 +38,14 @@ struct RootView: View {
                     }
                     .tag(section)
                 }
+                Divider()
+                SettingsLink {
+                    Label {
+                        Text("settings.title")
+                    } icon: {
+                        Image(systemName: "gearshape")
+                    }
+                }
             }
             .navigationSplitViewColumnWidth(200)
         } detail: {

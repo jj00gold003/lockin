@@ -30,5 +30,11 @@ struct LockInApp: App {
                 .task { app.startBlocker() }
         }
         .windowStyle(.hiddenTitleBar)
+
+        Settings {
+            SettingsView()
+                .environmentObject(app)
+                .modelContainer(container)
+        }
     }
 }

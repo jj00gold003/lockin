@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import Combine
+import AppKit
 
 /// App-level dependency container: engine + repositories + per-feature ViewModels.
 @MainActor
@@ -43,7 +44,11 @@ final class AppModel: ObservableObject {
         blocker.$activeBlock
             .sink { [weak self] decision in
                 guard let self else { return }
-                if decision != nil, self.engine.isSessionActive {
+                if let decision, self.engine.isSessionActive {
+                    if decision.action == .hard, AccessibilityGuard.isGranted(),
+                       let running = self.hitApp(for: decision) {
+                        _ = AccessibilityGuard.minimize(app: running)
+                    }
                     self.overlay.show(engine: self.engine, blocker: self.blocker)
                 } else {
                     self.overlay.hide()
@@ -70,6 +75,15 @@ final class AppModel: ObservableObject {
         } else {
             sessionRules = nil
             return ruleRepo.all().compactMap { snapshot(from: $0) }
+        }
+    }
+
+    /// Find the running app for a block decision via its rule's bundle ID.
+    private func hitApp(for decision: BlockDecision) -> NSRunningApplication? {
+        let rules = ruleRepo.all()
+        guard let rule = rules.first(where: { $0.id == decision.ruleID }) else { return nil }
+        return NSWorkspace.shared.runningApplications.first {
+            $0.bundleIdentifier == rule.bundleID
         }
     }
 
