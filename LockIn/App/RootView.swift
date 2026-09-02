@@ -50,6 +50,7 @@ struct RootView: View {
         switch section {
         case .focus: FocusView()
         case .tasks: TasksView()
+        case .habits: HabitsView()
         default: ContentUnavailableView(
             String(localized: String.LocalizationValue(section.labelKey)),
             systemImage: section.icon
