@@ -338,6 +338,22 @@
         }
       }
     },
+    "tasks.focused": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min focused"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已专注 %lld 分钟"
+          }
+        }
+      }
+    },
     "tasks.priority.high": {
       "localizations": {
         "en": {

@@ -80,7 +80,7 @@ struct TasksView: View {
                 Text(task.title)
                     .strikethrough(task.isCompleted)
                 if task.accumulatedSeconds > 0 {
-                    Text(verbatim: "\(Int(task.accumulatedSeconds / 60))m")
+                    Text(String(format: String(localized: "tasks.focused"), Int(task.accumulatedSeconds / 60)))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
