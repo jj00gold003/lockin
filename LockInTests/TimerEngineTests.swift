@@ -88,6 +88,21 @@ final class TimerEngineTests: XCTestCase {
         XCTAssertFalse(engine.isSessionActive)
     }
 
+    func testPausedSecondsAccumulateAndReset() {
+        engine.startPomodoro()
+        advance(100)
+        engine.pause()
+        advance(50)
+        engine.resume()
+        advance(100)
+        engine.pause()
+        advance(30)
+        engine.abandon()
+        XCTAssertEqual(engine.pausedSeconds, 80, accuracy: 0.01)
+        engine.startPomodoro()
+        XCTAssertEqual(engine.pausedSeconds, 0)
+    }
+
     func testFreeFocusGrowsElapsed() {
         engine.startFreeFocus()
         advance(3600)

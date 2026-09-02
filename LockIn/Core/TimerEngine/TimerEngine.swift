@@ -34,6 +34,9 @@ public final class TimerEngine: ObservableObject {
 
     public private(set) var interruptionCount: Int = 0
     public private(set) var lastEndReason: EndReason = .none
+    /// Total seconds spent paused during the current engine run
+    public private(set) var pausedSeconds: TimeInterval = 0
+    private var pausedAt: Date?
 
     public var isSessionActive: Bool {
         phase == .focusing || phase == .paused || phase == .resting
@@ -41,6 +44,10 @@ public final class TimerEngine: ObservableObject {
     public var isBreak: Bool { phase == .resting }
     /// Read-only exposure of the current phase's planned duration (0 = unlimited, free mode).
     public var currentPhaseDuration: TimeInterval { phaseDuration }
+
+    /// The engine's clock, exposed so persistence layers can timestamp records
+    /// on the same timeline the engine measures against (tests inject a fake clock).
+    public func currentTime() -> Date { now() }
 
     private let config: PomodoroConfig
     private let now: () -> Date
@@ -61,11 +68,13 @@ public final class TimerEngine: ObservableObject {
 
     public func startPomodoro() {
         mode = .pomodoro; round = 1; interruptionCount = 0; lastEndReason = .none
+        pausedSeconds = 0; pausedAt = nil
         beginPhase(.focusing, duration: config.focusSeconds)
     }
 
     public func startFreeFocus() {
         mode = .free; round = 1; interruptionCount = 0; lastEndReason = .none
+        pausedSeconds = 0; pausedAt = nil
         beginPhase(.focusing, duration: 0) // 0 = no upper limit
     }
 
@@ -76,11 +85,16 @@ public final class TimerEngine: ObservableObject {
         pausedRemaining = remaining
         pausedElapsed = elapsed
         phase = .paused
+        pausedAt = now()
         stopTicker()
     }
 
     public func resume() {
         guard phase == .paused, let paused = pausedPhase else { return }
+        if let pausedAt {
+            pausedSeconds += now().timeIntervalSince(pausedAt)
+        }
+        pausedAt = nil
         phase = paused
         if phaseDuration > 0 {
             anchor = now().addingTimeInterval(-(phaseDuration - pausedRemaining))
@@ -100,6 +114,10 @@ public final class TimerEngine: ObservableObject {
 
     public func abandon() {
         guard isSessionActive else { return }
+        if let started = pausedAt {
+            pausedSeconds += now().timeIntervalSince(started)
+            pausedAt = nil
+        }
         stopTicker()
         lastEndReason = .abandoned
         anchor = nil
