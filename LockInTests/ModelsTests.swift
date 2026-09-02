@@ -7,7 +7,7 @@ final class ModelsTests: XCTestCase {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         return try ModelContainer(
             for: TaskItem.self, Habit.self, HabitLog.self,
-            FocusSession.self, BlockRule.self,
+            FocusSession.self, BlockRule.self, WebsiteRule.self,
             configurations: config
         )
     }

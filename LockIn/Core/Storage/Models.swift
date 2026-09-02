@@ -83,3 +83,16 @@ final class BlockRule {
         self.isEnabled = isEnabled
     }
 }
+
+@Model
+final class WebsiteRule {
+    var id: UUID = UUID()
+    var domain: String = ""
+    var isEnabled: Bool = true
+    var createdAt: Date = Date.now
+
+    init(domain: String, isEnabled: Bool = true) {
+        self.id = UUID(); self.domain = domain; self.isEnabled = isEnabled
+        self.createdAt = Date.now
+    }
+}

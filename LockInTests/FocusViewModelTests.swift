@@ -17,7 +17,8 @@ final class FocusViewModelTests: XCTestCase {
         engine = TimerEngine(now: { [weak self] in self?.fakeNow ?? Date() })
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         container = try! ModelContainer(for: TaskItem.self, Habit.self, HabitLog.self,
-                                        FocusSession.self, BlockRule.self, configurations: config)
+                                        FocusSession.self, BlockRule.self, WebsiteRule.self,
+                                        configurations: config)
         context = ModelContext(container)
         sessionRepo = SessionRepository(context: context)
         taskRepo = TaskRepository(context: context)

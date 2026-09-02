@@ -10,7 +10,7 @@ final class RepositoriesTests: XCTestCase {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         container = try ModelContainer(
             for: TaskItem.self, Habit.self, HabitLog.self,
-            FocusSession.self, BlockRule.self, configurations: config
+            FocusSession.self, BlockRule.self, WebsiteRule.self, configurations: config
         )
         context = ModelContext(container)
     }
@@ -135,5 +135,31 @@ final class RepositoriesTests: XCTestCase {
         XCTAssertEqual(rules.all().first?.isEnabled, false)
         rules.delete(rule)
         XCTAssertEqual(rules.all().count, 0)
+    }
+
+    // MARK: WebsiteRuleRepository
+
+    func testWebsiteRuleAddNormalizesDomain() {
+        let sites = WebsiteRuleRepository(context: context)
+        let rule = sites.add(domain: "https://www.YouTube.com/watch?v=1")
+        XCTAssertEqual(rule?.domain, "youtube.com")
+        // Stored value is the normalized domain (roundtrip via fetch).
+        XCTAssertEqual(sites.all().first?.domain, "youtube.com")
+        XCTAssertEqual(sites.all().count, 1)
+    }
+
+    func testWebsiteRuleInvalidDomainRejected() {
+        let sites = WebsiteRuleRepository(context: context)
+        XCTAssertNil(sites.add(domain: "not a domain"))
+        XCTAssertEqual(sites.all().count, 0)
+    }
+
+    func testWebsiteRuleSetEnabledAndDelete() {
+        let sites = WebsiteRuleRepository(context: context)
+        let rule = sites.add(domain: "reddit.com")!
+        sites.setEnabled(rule, to: false)
+        XCTAssertEqual(sites.all().first?.isEnabled, false)
+        sites.delete(rule)
+        XCTAssertEqual(sites.all().count, 0)
     }
 }

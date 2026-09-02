@@ -6,8 +6,11 @@ import UniformTypeIdentifiers
 struct SettingsView: View {
     @EnvironmentObject private var app: AppModel
     @Query private var rules: [BlockRule]
+    @Query private var siteRules: [WebsiteRule]
     @Environment(\.modelContext) private var modelContext
     @State private var accessibilityGranted = AccessibilityGuard.isGranted()
+    @State private var newDomain = ""
+    @State private var showApplyError = false
 
     var body: some View {
         Form {
@@ -54,6 +57,52 @@ struct SettingsView: View {
                 Section("settings.schedule.editor") {
                     scheduleEditor(for: selectedRule)
                 }
+            }
+
+            Section("settings.websites.title") {
+                ForEach(siteRules.sorted { $0.domain < $1.domain }) { site in
+                    HStack {
+                        Text(site.domain)
+                        Spacer()
+                        Toggle("", isOn: websiteEnabledBinding(site)).labelsHidden()
+                        Button(role: .destructive) {
+                            app.websiteRepo.delete(site)
+                            app.refreshHostsSync()
+                        } label: {
+                            Image(systemName: "trash")
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                }
+                HStack {
+                    TextField("settings.websites.add.placeholder", text: $newDomain)
+                        .onSubmit { addWebsite() }
+                    Button("settings.websites.add") { addWebsite() }
+                        .disabled(HostsContentBuilder.normalizeDomain(newDomain) == nil)
+                }
+                HStack {
+                    Circle()
+                        .fill(app.hostsInSync ? .green : .orange)
+                        .frame(width: 10, height: 10)
+                    Text(app.hostsInSync ? "settings.websites.synced" : "settings.websites.outOfSync")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button("settings.websites.apply") {
+                        if !app.applyHosts() {
+                            showApplyError = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                                showApplyError = false
+                            }
+                        }
+                    }
+                }
+                if showApplyError {
+                    Text("settings.websites.admin.error")
+                        .foregroundStyle(.red)
+                }
+                Text("settings.websites.secureDNS.note")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section("settings.accessibility.title") {
@@ -227,5 +276,24 @@ struct SettingsView: View {
     }
     private func enabledBinding(_ rule: BlockRule) -> Binding<Bool> {
         Binding(get: { rule.isEnabled }, set: { rule.isEnabled = $0; try? modelContext.save() })
+    }
+
+    // MARK: - Blocked websites (/etc/hosts)
+
+    private func addWebsite() {
+        guard HostsContentBuilder.normalizeDomain(newDomain) != nil else { return }
+        _ = app.websiteRepo.add(domain: newDomain)
+        newDomain = ""
+        app.refreshHostsSync()
+    }
+
+    private func websiteEnabledBinding(_ site: WebsiteRule) -> Binding<Bool> {
+        Binding(
+            get: { site.isEnabled },
+            set: {
+                app.websiteRepo.setEnabled(site, to: $0)
+                app.refreshHostsSync()
+            }
+        )
     }
 }

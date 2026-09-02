@@ -15,6 +15,8 @@ final class AppModel: ObservableObject {
     let sessionRepo: SessionRepository
     let habitRepo: HabitRepository
     let ruleRepo: BlockRuleRepository
+    let websiteRepo: WebsiteRuleRepository
+    let hostsApplier = HostsApplier()
     let focus: FocusViewModel
 
     init(container: ModelContainer) {
@@ -24,6 +26,7 @@ final class AppModel: ObservableObject {
         sessionRepo = SessionRepository(context: context)
         habitRepo = HabitRepository(context: context)
         ruleRepo = BlockRuleRepository(context: context)
+        websiteRepo = WebsiteRuleRepository(context: context)
         focus = FocusViewModel(engine: engine,
                                sessionRepo: sessionRepo,
                                taskRepo: taskRepo)
@@ -93,6 +96,40 @@ final class AppModel: ObservableObject {
 
     enum RecoveryChoice { case continueWork, markCompleted, discard }
 
+    // MARK: - Website blocker (/etc/hosts, network layer)
+
+    /// True when the managed marker section in /etc/hosts matches the enabled
+    /// website rules. Read-only launch check; applying prompts for admin.
+    @Published var hostsInSync: Bool = true
+
+    /// Domains of enabled rules, normalized — the input contract for
+    /// HostsContentBuilder.build.
+    func enabledDomains() -> [String] {
+        websiteRepo.all().filter(\.isEnabled)
+            .compactMap { HostsContentBuilder.normalizeDomain($0.domain) }
+    }
+
+    /// Recomputes `hostsInSync` by comparing the live hosts file with what
+    /// HostsContentBuilder would produce for the enabled rules. No prompt.
+    func refreshHostsSync() {
+        let current = hostsApplier.currentHosts()
+        let expected = HostsContentBuilder.build(currentHosts: current,
+                                                 enabledDomains: enabledDomains())
+        hostsInSync = (current == expected)
+    }
+
+    /// Applies the expected managed section to /etc/hosts (one admin prompt).
+    /// Returns false when the password was denied or the step failed.
+    @discardableResult
+    func applyHosts() -> Bool {
+        let current = hostsApplier.currentHosts()
+        let newContent = HostsContentBuilder.build(currentHosts: current,
+                                                   enabledDomains: enabledDomains())
+        let ok = hostsApplier.apply(newContent: newContent)
+        refreshHostsSync()
+        return ok
+    }
+
     // MARK: - Blocker (Task 9: soft block overlay)
 
     let monitor = FrontmostAppMonitor()
@@ -148,6 +185,9 @@ final class AppModel: ObservableObject {
                 if phase == .idle || phase == .finished { self?.sessionRules = nil }
             }
             .store(in: &cancellables)
+
+        // Read-only hosts sync check at startup (no admin prompt).
+        refreshHostsSync()
     }
 
     /// spec 4.3 anti-cheat: lock a rules snapshot when a session starts; mid-session rule edits don't apply

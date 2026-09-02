@@ -1378,5 +1378,134 @@
         }
       }
     }
+,
+    "settings.websites.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocked Websites"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "屏蔽网站"
+          }
+        }
+      }
+    },
+    "settings.websites.add.placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "youtube.com"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "youtube.com"
+          }
+        }
+      }
+    },
+    "settings.websites.add": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加"
+          }
+        }
+      }
+    },
+    "settings.websites.apply": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply to System"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用到系统"
+          }
+        }
+      }
+    },
+    "settings.websites.synced": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hosts updated"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已同步到系统"
+          }
+        }
+      }
+    },
+    "settings.websites.outOfSync": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pending changes"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有改动未生效"
+          }
+        }
+      }
+    },
+    "settings.websites.admin.error": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply failed or denied"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用失败或被拒绝"
+          }
+        }
+      }
+    },
+    "settings.websites.secureDNS.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocking works system-wide via the hosts file. Browser “secure DNS” may bypass it — disable it in your browser for full coverage. An admin password is required when applying."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通过系统 hosts 文件全浏览器生效。浏览器开启『安全 DNS』可能绕过，请在浏览器设置中关闭。应用到系统时需要输入管理员密码。"
+          }
+        }
+      }
+    }
   }
 }

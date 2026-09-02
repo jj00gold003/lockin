@@ -38,7 +38,7 @@ struct LockInApp: App {
             // and cannot capture self.container before full initialization.
             let made = try ModelContainer(
                 for: TaskItem.self, Habit.self, HabitLog.self,
-                FocusSession.self, BlockRule.self
+                FocusSession.self, BlockRule.self, WebsiteRule.self
             )
             container = made
             _app = StateObject(wrappedValue: AppModel(container: made))
