@@ -35,13 +35,17 @@ struct SessionRepository {
 
     func focusSeconds(since date: Date) -> TimeInterval {
         let descriptor = FetchDescriptor<FocusSession>(
-            predicate: #Predicate { $0.startedAt >= date && $0.status != "running" }
+            predicate: #Predicate { $0.status != "running" }
         )
         let sessions = (try? context.fetch(descriptor)) ?? []
-        return sessions.reduce(0) { total, session in
-            guard let end = session.endedAt else { return total }
-            return total + max(0, end.timeIntervalSince(session.startedAt))
-        }
+        // A session counts fully when it ENDED at/after the boundary, even if
+        // it started before it (e.g. yesterday's late session run into today).
+        return sessions
+            .filter { ($0.endedAt ?? $0.startedAt) >= date }
+            .reduce(0) { total, session in
+                guard let end = session.endedAt else { return total }
+                return total + max(0, end.timeIntervalSince(session.startedAt))
+            }
     }
 
     /// Per-day focus seconds for the last N days (including today), returned in ascending day order

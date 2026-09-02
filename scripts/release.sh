@@ -5,6 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 CONFIG="Release"
 VERSION=$(grep MARKETING_VERSION project.yml | head -1 | sed 's/.*"\(.*\)"/\1/')
+[ -n "$VERSION" ] || { echo "Failed to extract MARKETING_VERSION" >&2; exit 1; }
 
 xcodegen generate
 xcodebuild -project LockIn.xcodeproj -scheme LockIn -configuration "$CONFIG" \

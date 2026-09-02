@@ -10,7 +10,7 @@ enum SaveLogger {
         do {
             try context.save()
         } catch {
-            logger.error("SwiftData save failed at \(file, privacy: .public):\(line): \(error)")
+            logger.error("SwiftData save failed at \(file, privacy: .public):\(line): \(String(describing: error), privacy: .public)")
         }
     }
 }

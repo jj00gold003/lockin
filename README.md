@@ -6,11 +6,7 @@ LockIn is a free, open-source macOS app for knowledge workers and developers:
 focus sessions with real distraction blocking — distract-proof Pomodoro, tasks,
 habits, and stats. All local. Zero telemetry. Forever.
 
-![LockIn demo](docs/assets/demo.gif)
-
-<!-- demo.gif placeholder: record a 15s screen capture "start focus → open a
-blocklisted app → cover overlay appears", convert to GIF, drop it at
-docs/assets/demo.gif -->
+<!-- demo gif placeholder: record 15s of start-focus → open blocked app → overlay appears, save as docs/assets/demo.gif -->
 
 ## ✨ Features
 
