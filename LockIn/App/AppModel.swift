@@ -23,6 +23,12 @@ final class AppModel: ObservableObject {
         focus = FocusViewModel(engine: engine,
                                sessionRepo: sessionRepo,
                                taskRepo: taskRepo)
+
+        // Relay TimerEngine changes into AppModel so views observing AppModel
+        // (e.g. MenuBarExtra label/panel) re-render when the engine ticks.
+        engine.objectWillChange
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &cancellables)
     }
 
     // MARK: - Blocker (Task 9: soft block overlay)
