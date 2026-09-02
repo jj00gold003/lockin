@@ -37,8 +37,24 @@ struct HostsContentBuilder {
             return head + block + tail
         }
 
-        // No managed section yet: append one, with exactly one separating newline.
+        // No usable managed section. If orphan markers exist (unpaired, or
+        // END before BEGIN), the base is corrupted: strip only the marker
+        // lines themselves — every other line is foreign content that must
+        // survive — then rebuild via the append path. (Appending without
+        // stripping would leave an orphan BEGIN eating foreign lines or an
+        // orphan END that makes every later build append again.)
         var base = currentHosts
+        if base.contains(HostsMarkers.begin) || base.contains(HostsMarkers.end) {
+            base = base
+                .components(separatedBy: "\n")
+                .filter {
+                    let line = $0.trimmingCharacters(in: .whitespaces)
+                    return line != HostsMarkers.begin && line != HostsMarkers.end
+                }
+                .joined(separator: "\n")
+        }
+
+        // No managed section yet: append one, with exactly one separating newline.
         while base.hasSuffix("\n") { base.removeLast() }
         return base.isEmpty ? block : base + "\n" + block
     }
@@ -86,16 +102,19 @@ struct HostsContentBuilder {
         // (build() re-adds the www variant for hosts entries).
         if input.hasPrefix("www.") { input = String(input.dropFirst(4)) }
 
-        // Validity: must contain a dot, no spaces, no other stray separators,
-        // and non-empty labels on both sides of the last dot.
+        // Strict charset whitelist: a hosts entry is one token on one line, so
+        // anything outside [a-z0-9.-] (newlines, spaces, '#', '/', …) could
+        // inject extra hosts lines or shell/host syntax and is rejected.
+        let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyz0123456789.-")
         guard !input.isEmpty,
-              !input.contains(" "),
-              input.contains("."),
-              !input.hasPrefix("."),
-              !input.hasSuffix("."),
-              !input.hasPrefix("-") else { return nil }
-        let labels = input.split(separator: ".")
-        guard labels.count >= 2, labels.allSatisfy({ !$0.isEmpty }) else { return nil }
+              input.unicodeScalars.allSatisfy({ allowed.contains($0) }) else { return nil }
+        // Empty labels ("a..b") are not hostnames; neither are labels whose
+        // edges are dashes ("-a.com", "a-.com").
+        let labels = input.split(separator: ".", omittingEmptySubsequences: false)
+        guard labels.count >= 2,
+              labels.allSatisfy({
+                  !$0.isEmpty && $0.first != "-" && $0.last != "-"
+              }) else { return nil }
         return input
     }
 }

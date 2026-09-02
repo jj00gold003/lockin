@@ -1,10 +1,13 @@
 import Foundation
+import os
 
 /// Applies built /etc/hosts content using a single administrator-authorized
 /// shell step. The content is written to a temp file unprivileged; the
 /// privileged script only ever receives literal, quoted paths — user domains
 /// never touch the shell (they live inside the content file).
 struct HostsApplier {
+
+    private static let log = Logger(subsystem: "com.lockin.app", category: "hosts")
 
     /// Injectable privileged runner so tests never trigger a password prompt.
     /// The default runs the script via AppleScript's admin-authorized shell
@@ -14,17 +17,23 @@ struct HostsApplier {
             source: "do shell script \"\(script)\" with administrator privileges")
         var error: NSDictionary?
         appleScript?.executeAndReturnError(&error)
+        if let error {
+            HostsApplier.log.error(
+                "hosts apply AppleScript failed: \(String(describing: error), privacy: .public)")
+        }
         return error == nil
     }
 
-    /// Writes newContent to a temp file (no privileges), then — via ONE admin
-    /// prompt — re-owns it, moves it into place, and flushes the DNS cache.
-    /// Never touches /etc/hosts outside the marker contract enforced by
-    /// HostsContentBuilder. Returns false when the prompt is denied or fails.
+    /// Writes newContent to a unique temp file (no privileges), then — via ONE
+    /// admin prompt — re-owns it, moves it into place, and flushes the DNS
+    /// cache. The UUID component prevents two applies (or a stale crashed run)
+    /// from racing on the same path. Never touches /etc/hosts outside the
+    /// marker contract enforced by HostsContentBuilder. Returns false when the
+    /// prompt is denied or the step fails.
     @discardableResult
     func apply(newContent: String) -> Bool {
         let tmpPath = (NSTemporaryDirectory() as NSString)
-            .appendingPathComponent("lockin-hosts.new")
+            .appendingPathComponent("lockin-hosts-\(UUID().uuidString).new")
 
         do {
             try newContent.write(toFile: tmpPath, atomically: true, encoding: .utf8)
@@ -32,6 +41,7 @@ struct HostsApplier {
             try FileManager.default.setAttributes([.posixPermissions: 0o600],
                                                   ofItemAtPath: tmpPath)
         } catch {
+            HostsApplier.log.error("hosts temp write failed: \(error, privacy: .public)")
             return false
         }
         defer { try? FileManager.default.removeItem(atPath: tmpPath) }
@@ -46,7 +56,8 @@ struct HostsApplier {
     }
 
     /// Reads the live hosts file (world-readable, no privileges needed).
-    func currentHosts() -> String {
-        (try? String(contentsOfFile: "/etc/hosts", encoding: .utf8)) ?? ""
+    /// Nil on read failure — callers must fail closed, never build from "".
+    func currentHosts() -> String? {
+        try? String(contentsOfFile: "/etc/hosts", encoding: .utf8)
     }
 }

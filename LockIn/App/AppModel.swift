@@ -111,18 +111,23 @@ final class AppModel: ObservableObject {
 
     /// Recomputes `hostsInSync` by comparing the live hosts file with what
     /// HostsContentBuilder would produce for the enabled rules. No prompt.
+    /// Unreadable hosts file reports out-of-sync (fail closed).
     func refreshHostsSync() {
-        let current = hostsApplier.currentHosts()
+        guard let current = hostsApplier.currentHosts() else {
+            hostsInSync = false
+            return
+        }
         let expected = HostsContentBuilder.build(currentHosts: current,
                                                  enabledDomains: enabledDomains())
         hostsInSync = (current == expected)
     }
 
     /// Applies the expected managed section to /etc/hosts (one admin prompt).
-    /// Returns false when the password was denied or the step failed.
+    /// Returns false when the hosts file is unreadable (refuses to rebuild
+    /// from empty), the password was denied, or the step failed.
     @discardableResult
     func applyHosts() -> Bool {
-        let current = hostsApplier.currentHosts()
+        guard let current = hostsApplier.currentHosts() else { return false }
         let newContent = HostsContentBuilder.build(currentHosts: current,
                                                    enabledDomains: enabledDomains())
         let ok = hostsApplier.apply(newContent: newContent)

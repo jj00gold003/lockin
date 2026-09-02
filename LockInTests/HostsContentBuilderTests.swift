@@ -123,4 +123,76 @@ final class HostsContentBuilderTests: XCTestCase {
         XCTAssertNil(HostsContentBuilder.normalizeDomain("has space.com"))
         XCTAssertNil(HostsContentBuilder.normalizeDomain("https://"))
     }
+
+    // MARK: - Injection / charset whitelist
+
+    func testNormalizeDomainRejectsEmbeddedNewline() {
+        XCTAssertNil(HostsContentBuilder.normalizeDomain("a.com\n0.0.0.0 evil.com"))
+        XCTAssertNil(HostsContentBuilder.normalizeDomain("evil.com\r\nx.com"))
+        XCTAssertNil(HostsContentBuilder.normalizeDomain("evil.com\n0.0.0.0 x.com\n# END LOCKIN BLOCK"))
+    }
+
+    func testNormalizeDomainRejectsTab() {
+        XCTAssertNil(HostsContentBuilder.normalizeDomain("a\tb.com"))
+        XCTAssertNil(HostsContentBuilder.normalizeDomain("a.com\t0.0.0.0 evil.com"))
+    }
+
+    func testNormalizeDomainRejectsShellAndCommentChars() {
+        XCTAssertNil(HostsContentBuilder.normalizeDomain("a#b.com"))
+        XCTAssertNil(HostsContentBuilder.normalizeDomain("a;b.com"))
+        XCTAssertNil(HostsContentBuilder.normalizeDomain("$(x).com"))
+        XCTAssertNil(HostsContentBuilder.normalizeDomain("a'b.com"))
+    }
+
+    func testNormalizeDomainRejectsEmptyLabels() {
+        XCTAssertNil(HostsContentBuilder.normalizeDomain("a..b"))
+        XCTAssertNil(HostsContentBuilder.normalizeDomain(".a.com"))
+        XCTAssertNil(HostsContentBuilder.normalizeDomain("a..com"))
+    }
+
+    // MARK: - Orphan / out-of-order markers (corrupted base)
+
+    /// An orphan BEGIN must not swallow following foreign lines, and must not
+    /// survive: the marker lines are stripped, foreign content kept, and
+    /// exactly one managed section is appended.
+    func testOrphanBeginStrippedAndForeignPreserved() {
+        let current = "127.0.0.1 localhost\n"
+            + "\(HostsMarkers.begin)\n0.0.0.0 old.com\n"
+        let out = HostsContentBuilder.build(currentHosts: current,
+                                            enabledDomains: ["new.com"])
+        XCTAssertEqual(out.components(separatedBy: HostsMarkers.begin).count - 1, 1)
+        XCTAssertEqual(out.components(separatedBy: HostsMarkers.end).count - 1, 1)
+        XCTAssertTrue(out.contains("127.0.0.1 localhost"))
+        XCTAssertTrue(out.contains("0.0.0.0 old.com"), "foreign lines must survive")
+        XCTAssertTrue(out.contains("0.0.0.0 new.com"))
+        // Idempotent from the repaired state.
+        XCTAssertEqual(out, HostsContentBuilder.build(currentHosts: out,
+                                                      enabledDomains: ["new.com"]))
+    }
+
+    /// An orphan END must not turn every later build into a duplicate append.
+    func testOrphanEndStrippedAndForeignPreserved() {
+        let current = "\(HostsMarkers.end)\n127.0.0.1 localhost\n"
+        let out = HostsContentBuilder.build(currentHosts: current,
+                                            enabledDomains: ["new.com"])
+        XCTAssertEqual(out.components(separatedBy: HostsMarkers.begin).count - 1, 1)
+        XCTAssertEqual(out.components(separatedBy: HostsMarkers.end).count - 1, 1)
+        XCTAssertTrue(out.contains("127.0.0.1 localhost"))
+        XCTAssertTrue(out.contains("0.0.0.0 new.com"))
+        XCTAssertEqual(out, HostsContentBuilder.build(currentHosts: out,
+                                                      enabledDomains: ["new.com"]))
+    }
+
+    /// END before BEGIN is corrupted as well: strip both marker lines, rebuild.
+    func testOutOfOrderMarkersStripped() {
+        let current = "\(HostsMarkers.end)\n127.0.0.1 localhost\n\(HostsMarkers.begin)\n"
+        let out = HostsContentBuilder.build(currentHosts: current,
+                                            enabledDomains: ["new.com"])
+        XCTAssertEqual(out.components(separatedBy: HostsMarkers.begin).count - 1, 1)
+        XCTAssertEqual(out.components(separatedBy: HostsMarkers.end).count - 1, 1)
+        XCTAssertTrue(out.contains("127.0.0.1 localhost"))
+        XCTAssertTrue(out.contains("0.0.0.0 new.com"))
+        XCTAssertEqual(out, HostsContentBuilder.build(currentHosts: out,
+                                                      enabledDomains: ["new.com"]))
+    }
 }
