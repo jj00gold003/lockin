@@ -49,16 +49,17 @@ struct RootView: View {
             }
             .navigationSplitViewColumnWidth(200)
         } detail: {
-            placeholder(for: selection)
+            detail(for: selection)
         }
     }
 
     @ViewBuilder
-    private func placeholder(for section: SidebarSection) -> some View {
+    private func detail(for section: SidebarSection) -> some View {
         switch section {
         case .focus: FocusView()
         case .tasks: TasksView()
         case .habits: HabitsView()
+        case .stats: StatsView()
         default: ContentUnavailableView(
             String(localized: String.LocalizationValue(section.labelKey)),
             systemImage: section.icon
