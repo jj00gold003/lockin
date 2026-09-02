@@ -120,17 +120,23 @@ final class AppModel: ObservableObject {
         blocker.$activeBlock
             .sink { [weak self] decision in
                 guard let self else { return }
-                if let decision, self.engine.isSessionActive {
-                    // Covers are per-window and nil-safe: an unresolvable
-                    // target app simply gets no covers.
-                    if let app = self.hitApp(for: decision) {
-                        self.cover.showCovers(for: app,
-                                              engine: self.engine,
-                                              blocker: self.blocker)
+                if let decision {
+                    // Banner is per-event and non-interactive: show it whenever a
+                    // block fires, even outside a session (always-scope rules).
+                    self.banner.show(appName: self.blockedAppName(for: decision))
+                    if self.engine.isSessionActive {
+                        // Covers are per-window and nil-safe: an unresolvable
+                        // target app simply gets no covers.
+                        if let app = self.hitApp(for: decision) {
+                            self.cover.showCovers(for: app,
+                                                  engine: self.engine,
+                                                  blocker: self.blocker)
+                        } else {
+                            self.cover.hideAll()
+                        }
                     } else {
                         self.cover.hideAll()
                     }
-                    self.banner.show(appName: self.blockedAppName(for: decision))
                 } else {
                     self.cover.hideAll()
                 }
