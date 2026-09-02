@@ -55,7 +55,7 @@ final class FocusSession {
     var id: UUID = UUID()
     var startedAt: Date = Date.now
     var endedAt: Date?
-    var type: String = "pomodoro"          // "free" | "pomodoro"
+    var type: String = "pomodoro"          // "free" | "pomodoro" | "countdown"
     var status: String = "running"         // "running" | "completed" | "abandoned"
     var taskID: UUID?
     var interruptionCount: Int = 0

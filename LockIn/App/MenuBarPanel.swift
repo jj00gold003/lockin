@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MenuBarPanel: View {
     @EnvironmentObject private var app: AppModel
+    @State private var showAbandonConfirm = false
 
     var body: some View {
         VStack(spacing: Theme.Spacing.m) {
@@ -22,7 +23,7 @@ struct MenuBarPanel: View {
                     if app.engine.isBreak {
                         menuButton("focus.skip.break", "forward.end.fill") { app.engine.skipBreak() }
                     }
-                    menuButton("focus.abandon", "stop.fill") { app.engine.abandon() }
+                    menuButton("focus.abandon", "stop.fill") { showAbandonConfirm = true }
                 } else {
                     menuButton("focus.start", "play.fill") { app.engine.startPomodoro() }
                 }
@@ -30,6 +31,14 @@ struct MenuBarPanel: View {
         }
         .padding(Theme.Spacing.m)
         .frame(width: 240)
+        // alert (not confirmationDialog): dialogs are unreliable inside a
+        // MenuBarExtra panel window.
+        .alert(Text("focus.abandon.confirm.title"), isPresented: $showAbandonConfirm) {
+            Button("focus.abandon.confirm.confirm", role: .destructive) {
+                app.engine.abandon()
+            }
+            Button("common.cancel", role: .cancel) {}
+        }
     }
 
     private var timeText: String {
@@ -41,7 +50,8 @@ struct MenuBarPanel: View {
 
     private var statusKey: String {
         switch app.engine.phase {
-        case .focusing: "focus.status.pomodoro"
+        case .focusing:
+            app.engine.mode == .countdown ? "focus.status.countdown" : "focus.status.pomodoro"
         case .resting: "focus.status.resting"
         case .paused: "focus.status.paused"
         case .finished, .idle: "focus.status.idle"

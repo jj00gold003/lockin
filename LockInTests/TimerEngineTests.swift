@@ -120,4 +120,41 @@ final class TimerEngineTests: XCTestCase {
         XCTAssertEqual(engine.phase, .focusing)
         XCTAssertEqual(engine.round, 2)
     }
+
+    // MARK: - Countdown mode (v1.1 Task 1)
+
+    func testCountdownEndsFinishedWithCompletedReason() {
+        engine.startCountdown(seconds: 60)
+        XCTAssertEqual(engine.phase, .focusing)
+        XCTAssertEqual(engine.mode, .countdown)
+        advance(60)
+        XCTAssertEqual(engine.phase, .finished)
+        XCTAssertEqual(engine.lastEndReason, .completed)
+        XCTAssertFalse(engine.isSessionActive)
+    }
+
+    func testCountdownPauseMath() {
+        engine.startCountdown(seconds: 120)
+        advance(60)
+        XCTAssertEqual(engine.remaining, 60, accuracy: 0.01)
+        engine.pause()
+        advance(30) // paused time must not count down
+        XCTAssertEqual(engine.remaining, 60, accuracy: 0.01)
+        engine.resume()
+        advance(60)
+        XCTAssertEqual(engine.phase, .finished)
+        XCTAssertEqual(engine.lastEndReason, .completed)
+    }
+
+    func testPreparePreviewsWithoutStarting() {
+        engine.prepare(mode: .pomodoro)
+        XCTAssertEqual(engine.phase, .idle)
+        XCTAssertEqual(engine.remaining, 1500, accuracy: 0.01)
+        XCTAssertEqual(engine.mode, .pomodoro)
+        XCTAssertEqual(engine.round, 1)
+        XCTAssertFalse(engine.isSessionActive)
+        advance(10) // tick must be a no-op while idle
+        XCTAssertEqual(engine.phase, .idle)
+        XCTAssertEqual(engine.remaining, 1500, accuracy: 0.01)
+    }
 }

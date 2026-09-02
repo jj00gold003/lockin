@@ -23,8 +23,8 @@ public struct PomodoroConfig: Equatable {
 @MainActor
 public final class TimerEngine: ObservableObject {
     public enum Phase: Equatable { case idle, focusing, paused, resting, finished }
-    public enum Mode: Equatable { case none, pomodoro, free }
-    public enum EndReason: Equatable { case none, abandoned }
+    public enum Mode: Equatable { case none, pomodoro, free, countdown }
+    public enum EndReason: Equatable { case none, abandoned, completed }
 
     @Published public private(set) var phase: Phase = .idle
     @Published public private(set) var mode: Mode = .none
@@ -76,6 +76,27 @@ public final class TimerEngine: ObservableObject {
         mode = .free; round = 1; interruptionCount = 0; lastEndReason = .none
         pausedSeconds = 0; pausedAt = nil
         beginPhase(.focusing, duration: 0) // 0 = no upper limit
+    }
+
+    public func startCountdown(seconds: TimeInterval) {
+        mode = .countdown; round = 1; interruptionCount = 0; lastEndReason = .none
+        pausedSeconds = 0; pausedAt = nil
+        beginPhase(.focusing, duration: seconds)
+    }
+
+    /// Preview a mode without starting a session (idle phase, no ticker)
+    public func prepare(mode: Mode, countdownSeconds: TimeInterval = 0) {
+        guard !isSessionActive else { return }
+        stopTicker()
+        self.mode = mode
+        round = 1
+        interruptionCount = 0
+        lastEndReason = .none
+        anchor = nil
+        phase = .idle
+        phaseDuration = mode == .pomodoro ? config.focusSeconds : (mode == .countdown ? countdownSeconds : 0)
+        elapsed = 0
+        remaining = phaseDuration
     }
 
     public func pause() {
@@ -139,6 +160,15 @@ public final class TimerEngine: ObservableObject {
 
     private func handlePhaseEnd() {
         if phase == .focusing {
+            if mode == .countdown {
+                // A countdown is a single bounded focus: ending it ends the
+                // session entirely (no break, next round, or auto-restart).
+                stopTicker()
+                lastEndReason = .completed
+                anchor = nil
+                phase = .finished
+                return
+            }
             let isLongBreak = mode == .pomodoro && round % config.roundsBeforeLongBreak == 0
             let breakDuration = isLongBreak ? config.longBreakSeconds : config.shortBreakSeconds
             beginPhase(.resting, duration: breakDuration)

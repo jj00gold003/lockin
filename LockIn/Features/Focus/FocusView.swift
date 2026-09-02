@@ -7,6 +7,14 @@ struct FocusView: View {
            sort: [SortDescriptor(\TaskItem.priority, order: .reverse)])
     private var pendingTasks: [TaskItem]
 
+    /// View-local mode selection (0 = pomodoro, 1 = free, 2 = countdown).
+    /// Changing it only previews the mode via `engine.prepare`; starting a
+    /// session is an explicit Start button action.
+    @State private var selectedMode: Int = 0
+    @State private var showAbandonConfirm = false
+    @State private var customMinutesText = ""
+    @AppStorage("countdownMinutes") private var countdownMinutes: Int = 25
+
     // Explicit init: the private @Query property would otherwise make the
     // synthesized memberwise initializer private and block `FocusView()`.
     init() {}
@@ -14,31 +22,107 @@ struct FocusView: View {
     var body: some View {
         VStack(spacing: Theme.Spacing.xl) {
             sessionPicker
+            if selectedMode == 2 {
+                countdownDurationChooser
+            }
             TimerRingView(engine: app.engine)
             taskPicker
             controls
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(Theme.Spacing.xl)
+        .onAppear(perform: syncSelectionOnAppear)
+        .onChange(of: selectedMode) { _, newValue in
+            previewMode(newValue)
+        }
+        .confirmationDialog(
+            Text("focus.abandon.confirm.title"),
+            isPresented: $showAbandonConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("focus.abandon.confirm.confirm", role: .destructive) {
+                app.engine.abandon()
+            }
+            Button("common.cancel", role: .cancel) {}
+        }
+    }
+
+    private func syncSelectionOnAppear() {
+        if app.engine.isSessionActive {
+            selectedMode = app.engine.mode == .free ? 1 : (app.engine.mode == .countdown ? 2 : 0)
+        } else {
+            app.engine.prepare(mode: .pomodoro)
+        }
+    }
+
+    /// Only updates the idle preview — never starts a session.
+    private func previewMode(_ modeIndex: Int) {
+        switch modeIndex {
+        case 1: app.engine.prepare(mode: .free)
+        case 2: app.engine.prepare(mode: .countdown,
+                                   countdownSeconds: Double(effectiveMinutes * 60))
+        default: app.engine.prepare(mode: .pomodoro)
+        }
     }
 
     private var sessionPicker: some View {
-        Picker("", selection: pickerBinding) {
+        Picker("", selection: $selectedMode) {
             Text("focus.mode.pomodoro").tag(0)
             Text("focus.mode.free").tag(1)
+            Text("focus.mode.countdown").tag(2)
         }
         .pickerStyle(.segmented)
-        .frame(width: 260)
+        .frame(width: 340)
         .disabled(app.engine.isSessionActive)
     }
 
-    private var pickerBinding: Binding<Int> {
-        Binding(
-            get: { app.engine.mode == .free ? 1 : 0 },
-            set: { newValue in
-                if newValue == 1 { app.engine.startFreeFocus() } else { app.engine.startPomodoro() }
+    private var countdownDurationChooser: some View {
+        HStack(spacing: Theme.Spacing.s) {
+            ForEach([15, 30, 45, 60], id: \.self) { minutes in
+                Button("\(minutes)") {
+                    countdownMinutes = minutes
+                    customMinutesText = ""
+                    app.engine.prepare(mode: .countdown,
+                                       countdownSeconds: Double(minutes * 60))
+                }
+                .buttonStyle(.bordered)
+                .tint(isPresetSelected(minutes) ? Theme.accent(for: .focus) : .secondary)
             }
-        )
+            TextField("focus.countdown.minutes", text: $customMinutesText)
+                .frame(width: 70)
+                .textFieldStyle(.roundedBorder)
+                .multilineTextAlignment(.center)
+                .onChange(of: customMinutesText) { _, newValue in
+                    handleCustomMinutesInput(newValue)
+                }
+            Text("focus.countdown.minutes")
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func isPresetSelected(_ preset: Int) -> Bool {
+        customMinutesText.isEmpty && countdownMinutes == preset
+    }
+
+    private func handleCustomMinutesInput(_ newValue: String) {
+        let digits = newValue.filter { $0.isNumber }
+        if digits != newValue { customMinutesText = digits }
+        if let minutes = Int(digits), (1...600).contains(minutes) {
+            countdownMinutes = minutes
+            if selectedMode == 2 {
+                app.engine.prepare(mode: .countdown,
+                                   countdownSeconds: Double(minutes * 60))
+            }
+        }
+    }
+
+    /// Minutes the Start button will use in countdown mode (1...600, default
+    /// falls back to the persisted selection when the custom field is invalid).
+    private var effectiveMinutes: Int {
+        if let minutes = Int(customMinutesText), (1...600).contains(minutes) {
+            return minutes
+        }
+        return min(max(countdownMinutes, 1), 600)
     }
 
     // Manual binding: AppModel.focus is a `let`, so $app.focus dynamic-member
@@ -65,7 +149,11 @@ struct FocusView: View {
             switch app.engine.phase {
             case .idle, .finished:
                 Button {
-                    app.engine.startPomodoro()
+                    switch selectedMode {
+                    case 1: app.engine.startFreeFocus()
+                    case 2: app.engine.startCountdown(seconds: Double(effectiveMinutes * 60))
+                    default: app.engine.startPomodoro()
+                    }
                 } label: {
                     Label("focus.start", systemImage: "play.fill")
                 }
@@ -73,7 +161,7 @@ struct FocusView: View {
                 .tint(Theme.accent(for: .focus))
             case .focusing, .resting:
                 Button(role: .destructive) {
-                    app.engine.abandon()
+                    showAbandonConfirm = true
                 } label: {
                     Label("focus.abandon", systemImage: "stop.fill")
                 }
@@ -141,7 +229,12 @@ struct TimerRingView: View {
 
     private var statusText: String {
         switch engine.phase {
-        case .focusing: engine.mode == .free ? "focus.status.free" : "focus.status.pomodoro"
+        case .focusing:
+            switch engine.mode {
+            case .free: "focus.status.free"
+            case .countdown: "focus.status.countdown"
+            default: "focus.status.pomodoro"
+            }
         case .resting: "focus.status.resting"
         case .paused: "focus.status.paused"
         case .finished: "focus.status.done"

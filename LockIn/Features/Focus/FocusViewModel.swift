@@ -32,7 +32,12 @@ final class FocusViewModel: ObservableObject {
         switch phase {
         case .focusing where currentSessionID == nil && engine.mode != .none:
             lastSettledPausedSeconds = engine.pausedSeconds
-            let type = engine.mode == .free ? "free" : "pomodoro"
+            let type: String
+            switch engine.mode {
+            case .free: type = "free"
+            case .countdown: type = "countdown"
+            default: type = "pomodoro"
+            }
             let session = sessionRepo.start(type: type, taskID: selectedTaskID,
                                             at: engine.currentTime())
             currentSessionID = session.id
