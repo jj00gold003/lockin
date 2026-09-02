@@ -30,7 +30,7 @@ enum BlockLogStore {
         guard let data = try? encoder.encode(event) else { return }
         if let handle = try? FileHandle(forWritingTo: fileURL) {
             _ = try? handle.seekToEnd()
-            _ = try? handle.write(data + newline)
+            handle.write(data + newline)
             try? handle.close()
         } else {
             try? (data + newline).write(to: fileURL)
@@ -57,11 +57,19 @@ final class BlockerController: ObservableObject {
     private var sessionActive: () -> Bool = { false }
     private var reevaluateTimer: Timer?
     private var blockedSince: [String: Date] = [:] // bundleID -> first block moment
+    private var lastAllowedBundleID: String?
+    private var lastAllowedApp: NSRunningApplication?
+    /// Injected AppKit hook for hard blocks (minimize the target app).
+    /// Design note: the hard-minimize side effect moved here from AppModel so
+    /// AppModel only supplies the closure and BlockerController owns the
+    /// switch-away sequence; AppKit specifics stay behind the closure.
+    private var onHardBlock: (BlockDecision) -> Void = { _ in }
     private var cancellables: Set<AnyCancellable> = []
 
     func start(monitor: FrontmostAppMonitor,
                rulesProvider: @escaping () -> [RuleSnapshot],
-               sessionActive: @escaping () -> Bool) {
+               sessionActive: @escaping () -> Bool,
+               onHardBlock: @escaping (BlockDecision) -> Void = { _ in }) {
         reevaluateTimer?.invalidate()
         reevaluateTimer = nil
         cancellables.forEach { $0.cancel() }
@@ -69,6 +77,7 @@ final class BlockerController: ObservableObject {
         self.monitor = monitor
         self.rulesProvider = rulesProvider
         self.sessionActive = sessionActive
+        self.onHardBlock = onHardBlock
         monitor.$frontmostBundleID
             .sink { [weak self] _ in self?.reevaluate() }
             .store(in: &cancellables)
@@ -89,13 +98,32 @@ final class BlockerController: ObservableObject {
             date: .now
         )
         if decision.action == .allow {
+            if !bundleID.isEmpty {
+                // Remember the last place the user was allowed to be, so a
+                // later block can switch them back to it.
+                lastAllowedBundleID = bundleID
+                lastAllowedApp = NSWorkspace.shared.frontmostApplication
+            }
             if let since = blockedSince.removeValue(forKey: bundleID) {
                 BlockLogStore.append(bundleID: bundleID, seconds: Date.now.timeIntervalSince(since))
             }
             activeBlock = nil
         } else {
-            if blockedSince[bundleID] == nil { blockedSince[bundleID] = .now }
+            let isNewBlock = blockedSince[bundleID] == nil
+            if isNewBlock { blockedSince[bundleID] = .now }
             activeBlock = decision
+            if isNewBlock { switchAway(from: decision) }
+        }
+    }
+
+    /// On a fresh allow -> blocked transition: hard-minimize via the injected
+    /// hook first, then activate the last allowed app (fallback: LockIn itself).
+    private func switchAway(from decision: BlockDecision) {
+        onHardBlock(decision)
+        if let app = lastAllowedApp, !app.isTerminated {
+            app.activate()
+        } else {
+            NSApp.activate(ignoringOtherApps: true)
         }
     }
 }

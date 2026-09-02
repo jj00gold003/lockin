@@ -45,7 +45,7 @@ final class ModelsTests: XCTestCase {
         try context.save()
         let fetched = try context.fetch(FetchDescriptor<BlockRule>())
         XCTAssertEqual(fetched.first?.level, "soft")
-        XCTAssertEqual(fetched.first?.scope, "sessionOnly")
+        XCTAssertEqual(fetched.first?.scope, "always")
         XCTAssertEqual(fetched.first?.isEnabled, true)
     }
 }

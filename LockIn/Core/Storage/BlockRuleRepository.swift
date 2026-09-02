@@ -6,7 +6,7 @@ struct BlockRuleRepository {
 
     @discardableResult
     func add(bundleID: String, appDisplayName: String, level: String = "soft",
-             scope: String = "sessionOnly", scheduleJSON: String = "[]") -> BlockRule {
+             scope: String = "always", scheduleJSON: String = "[]") -> BlockRule {
         let rule = BlockRule(bundleID: bundleID, appDisplayName: appDisplayName,
                              level: level, scope: scope, scheduleJSON: scheduleJSON)
         context.insert(rule)
@@ -25,6 +25,13 @@ struct BlockRuleRepository {
 
     func setEnabled(_ rule: BlockRule, to enabled: Bool) {
         rule.isEnabled = enabled
+        SaveLogger.save(context)
+    }
+
+    /// Replaces the rule's schedule windows (already JSON-encoded by the
+    /// caller) and persists through SaveLogger.
+    func setScheduleJSON(_ rule: BlockRule, to json: String) {
+        rule.scheduleJSON = json
         SaveLogger.save(context)
     }
 }

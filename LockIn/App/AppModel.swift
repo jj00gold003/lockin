@@ -97,7 +97,8 @@ final class AppModel: ObservableObject {
 
     let monitor = FrontmostAppMonitor()
     let blocker = BlockerController()
-    let overlay = BlockOverlayWindowController()
+    let cover = WindowCoverController()
+    let banner = BannerController()
     private var cancellables: Set<AnyCancellable> = []
 
     func startBlocker() {
@@ -107,19 +108,31 @@ final class AppModel: ObservableObject {
             rulesProvider: { [weak self] in
                 self?.effectiveRules() ?? []
             },
-            sessionActive: { [weak self] in self?.engine.isSessionActive ?? false }
+            sessionActive: { [weak self] in self?.engine.isSessionActive ?? false },
+            onHardBlock: { [weak self] decision in
+                guard let self else { return }
+                if decision.action == .hard, AccessibilityGuard.isGranted(),
+                   let running = self.hitApp(for: decision) {
+                    _ = AccessibilityGuard.minimize(app: running)
+                }
+            }
         )
         blocker.$activeBlock
             .sink { [weak self] decision in
                 guard let self else { return }
                 if let decision, self.engine.isSessionActive {
-                    if decision.action == .hard, AccessibilityGuard.isGranted(),
-                       let running = self.hitApp(for: decision) {
-                        _ = AccessibilityGuard.minimize(app: running)
+                    // Covers are per-window and nil-safe: an unresolvable
+                    // target app simply gets no covers.
+                    if let app = self.hitApp(for: decision) {
+                        self.cover.showCovers(for: app,
+                                              engine: self.engine,
+                                              blocker: self.blocker)
+                    } else {
+                        self.cover.hideAll()
                     }
-                    self.overlay.show(engine: self.engine, blocker: self.blocker)
+                    self.banner.show(appName: self.blockedAppName(for: decision))
                 } else {
-                    self.overlay.hide()
+                    self.cover.hideAll()
                 }
             }
             .store(in: &cancellables)
@@ -153,6 +166,14 @@ final class AppModel: ObservableObject {
         return NSWorkspace.shared.runningApplications.first {
             $0.bundleIdentifier == rule.bundleID
         }
+    }
+
+    /// Best-effort display name for banner copy: the running app's localized
+    /// name, falling back to the rule's stored app name.
+    private func blockedAppName(for decision: BlockDecision) -> String {
+        let rules = ruleRepo.all()
+        guard let rule = rules.first(where: { $0.id == decision.ruleID }) else { return "" }
+        return hitApp(for: decision)?.localizedName ?? rule.appDisplayName
     }
 
     private func snapshot(from rule: BlockRule) -> RuleSnapshot? {

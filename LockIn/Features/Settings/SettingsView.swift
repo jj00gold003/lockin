@@ -25,6 +25,7 @@ struct SettingsView: View {
                     }
                     TableColumn("settings.blacklist.scope") { rule in
                         Picker("", selection: scopeBinding(rule)) {
+                            Text("block.scope.always").tag("always")
                             Text("settings.blacklist.scope.session").tag("sessionOnly")
                             Text("settings.blacklist.scope.scheduled").tag("scheduled")
                         }
@@ -44,6 +45,14 @@ struct SettingsView: View {
                         Label("common.delete", systemImage: "trash")
                     }
                     .disabled(selectedRuleIDs.isEmpty)
+                }
+            }
+
+            // Schedule editor: shown only for the selected rule when its
+            // scope is "scheduled".
+            if let selectedRule, selectedRule.scope == "scheduled" {
+                Section("settings.schedule.editor") {
+                    scheduleEditor(for: selectedRule)
                 }
             }
 
@@ -76,7 +85,114 @@ struct SettingsView: View {
 
     // MARK: - Row selection (delete)
 
+    // The table keeps Set<UUID> selection for multi-select delete; the
+    // schedule editor edits the first selected rule (deterministic order).
     @State private var selectedRuleIDs = Set<UUID>()
+
+    private var selectedRule: BlockRule? {
+        rules.first { selectedRuleIDs.contains($0.id) }
+    }
+
+    // MARK: - Schedule editor (scope == "scheduled")
+
+    // Calendar weekday semantics: 1 = Sunday ... 7 = Saturday.
+    private let scheduleRows: [(key: String, weekday: Int)] = [
+        ("settings.schedule.mon", 2),
+        ("settings.schedule.tue", 3),
+        ("settings.schedule.wed", 4),
+        ("settings.schedule.thu", 5),
+        ("settings.schedule.fri", 6),
+        ("settings.schedule.sat", 7),
+        ("settings.schedule.sun", 1),
+    ]
+
+    private static let defaultStartMinute = 9 * 60
+    private static let defaultEndMinute = 18 * 60
+
+    private func scheduleEditor(for rule: BlockRule) -> some View {
+        ForEach(scheduleRows, id: \.weekday) { row in
+            HStack {
+                Toggle(isOn: dayEnabledBinding(rule, weekday: row.weekday)) {
+                    Text(String(localized: String.LocalizationValue(row.key)))
+                }
+                Spacer()
+                if windows(of: rule).contains(where: { $0.weekday == row.weekday }) {
+                    Text("settings.schedule.start")
+                        .foregroundStyle(.secondary)
+                    DatePicker("", selection: timeBinding(rule, weekday: row.weekday, isStart: true),
+                               displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                        .fixedSize()
+                    Text("settings.schedule.end")
+                        .foregroundStyle(.secondary)
+                    DatePicker("", selection: timeBinding(rule, weekday: row.weekday, isStart: false),
+                               displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                        .fixedSize()
+                }
+            }
+        }
+    }
+
+    private func windows(of rule: BlockRule) -> [ScheduleWindow] {
+        (try? JSONDecoder().decode([ScheduleWindow].self,
+                                   from: Data(rule.scheduleJSON.utf8))) ?? []
+    }
+
+    /// Re-encodes the windows (sorted) into `rule.scheduleJSON` and persists.
+    private func setWindows(_ rule: BlockRule, _ windows: [ScheduleWindow]) {
+        let sorted = windows.sorted {
+            ($0.weekday, $0.startMinute) < ($1.weekday, $1.startMinute)
+        }
+        guard let data = try? JSONEncoder().encode(sorted),
+              let json = String(data: data, encoding: .utf8) else { return }
+        app.ruleRepo.setScheduleJSON(rule, to: json)
+    }
+
+    /// Toggling a day on adds a default window; off removes that weekday's
+    /// window entirely (editing replaces the weekday's window).
+    private func dayEnabledBinding(_ rule: BlockRule, weekday: Int) -> Binding<Bool> {
+        Binding<Bool>(
+            get: { windows(of: rule).contains { $0.weekday == weekday } },
+            set: { on in
+                var ws = windows(of: rule)
+                if on {
+                    ws.append(ScheduleWindow(weekday: weekday,
+                                             startMinute: Self.defaultStartMinute,
+                                             endMinute: Self.defaultEndMinute))
+                } else {
+                    ws.removeAll { $0.weekday == weekday }
+                }
+                setWindows(rule, ws)
+            }
+        )
+    }
+
+    /// Hour/minute picker bound to a window's start or end minute. Clamps so
+    /// start stays before the (exclusive) end.
+    private func timeBinding(_ rule: BlockRule, weekday: Int, isStart: Bool) -> Binding<Date> {
+        Binding<Date>(
+            get: {
+                let window = windows(of: rule).first { $0.weekday == weekday }
+                let minutes = window.map { isStart ? $0.startMinute : $0.endMinute }
+                    ?? (isStart ? Self.defaultStartMinute : Self.defaultEndMinute)
+                return Calendar.current.date(bySettingHour: minutes / 60,
+                                             minute: minutes % 60, second: 0, of: .now) ?? .now
+            },
+            set: { date in
+                var ws = windows(of: rule)
+                guard let idx = ws.firstIndex(where: { $0.weekday == weekday }) else { return }
+                let minutes = Calendar.current.component(.hour, from: date) * 60
+                    + Calendar.current.component(.minute, from: date)
+                if isStart {
+                    ws[idx].startMinute = min(minutes, ws[idx].endMinute - 1)
+                } else {
+                    ws[idx].endMinute = max(minutes, ws[idx].startMinute + 1)
+                }
+                setWindows(rule, ws)
+            }
+        )
+    }
 
     private func deleteSelected() {
         for rule in rules where selectedRuleIDs.contains(rule.id) {

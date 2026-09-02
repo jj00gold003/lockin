@@ -72,12 +72,12 @@ final class BlockRule {
     var bundleID: String = ""
     var appDisplayName: String = ""
     var level: String = "soft"             // "soft" | "hard"
-    var scope: String = "sessionOnly"      // "sessionOnly" | "scheduled"
+    var scope: String = "always"           // "always" | "sessionOnly" | "scheduled"
     var scheduleJSON: String = "[]"
     var isEnabled: Bool = true
 
     init(bundleID: String, appDisplayName: String, level: String = "soft",
-         scope: String = "sessionOnly", scheduleJSON: String = "[]", isEnabled: Bool = true) {
+         scope: String = "always", scheduleJSON: String = "[]", isEnabled: Bool = true) {
         self.id = UUID(); self.bundleID = bundleID; self.appDisplayName = appDisplayName
         self.level = level; self.scope = scope; self.scheduleJSON = scheduleJSON
         self.isEnabled = isEnabled

@@ -18,7 +18,7 @@ public enum BlockLevel: String, Codable, CaseIterable, Sendable {
 }
 
 public enum BlockScope: String, Codable, CaseIterable, Sendable {
-    case sessionOnly, scheduled
+    case always, sessionOnly, scheduled
 }
 
 public struct RuleSnapshot: Equatable, Sendable {
@@ -63,6 +63,8 @@ public struct BlockRuleEvaluator: Sendable {
         for rule in rules where rule.isEnabled && rule.bundleID == frontmostBundleID {
             let applies: Bool
             switch rule.scope {
+            case .always:
+                applies = true
             case .sessionOnly:
                 applies = isSessionActive
             case .scheduled:

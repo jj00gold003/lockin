@@ -67,6 +67,22 @@ final class BlockRuleEvaluatorTests: XCTestCase {
         XCTAssertEqual(d.action, .hard)
     }
 
+    func testAlwaysRuleBlocksWithoutSession() {
+        let rules = [rule(twitterID, level: .soft, scope: .always)]
+        XCTAssertEqual(evaluator.evaluate(rules: rules, frontmostBundleID: twitterID,
+                                          isSessionActive: false, date: thursday9am).action, .soft)
+    }
+
+    func testAlwaysSoftVsSessionOnlyHardHardWins() {
+        let rules = [
+            rule(twitterID, level: .soft, scope: .always),
+            rule(twitterID, level: .hard, scope: .sessionOnly),
+        ]
+        let d = evaluator.evaluate(rules: rules, frontmostBundleID: twitterID,
+                                   isSessionActive: true, date: thursday9am)
+        XCTAssertEqual(d.action, .hard)
+    }
+
     func testDisabledRuleIgnored() {
         let rules = [rule(twitterID, level: .hard, scope: .sessionOnly, enabled: false)]
         XCTAssertEqual(evaluator.evaluate(rules: rules, frontmostBundleID: twitterID,
