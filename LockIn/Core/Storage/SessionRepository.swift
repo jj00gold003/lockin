@@ -69,6 +69,18 @@ struct SessionRepository {
         }
     }
 
+    /// Completion rate of finished sessions in the last N days (nil when no data)
+    func completionRate(days: Int, calendar: Calendar = .current, now: Date = .now) -> Double? {
+        let start = calendar.startOfDay(for: calendar.date(byAdding: .day, value: -(days - 1), to: now)!)
+        let descriptor = FetchDescriptor<FocusSession>(
+            predicate: #Predicate { $0.startedAt >= start && $0.status != "running" }
+        )
+        let sessions = (try? context.fetch(descriptor)) ?? []
+        guard !sessions.isEmpty else { return nil }
+        let completed = sessions.filter { $0.status == "completed" }.count
+        return Double(completed) / Double(sessions.count)
+    }
+
     private func find(id: UUID) -> FocusSession? {
         var descriptor = FetchDescriptor<FocusSession>(predicate: #Predicate { $0.id == id })
         descriptor.fetchLimit = 1

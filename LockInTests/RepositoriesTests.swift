@@ -54,6 +54,17 @@ final class RepositoriesTests: XCTestCase {
         XCTAssertEqual(buckets.last?.seconds ?? 0, 600, accuracy: 5)
     }
 
+    func testCompletionRate() {
+        let sessions = SessionRepository(context: context)
+        let a = sessions.start(type: "pomodoro", taskID: nil)
+        sessions.finish(id: a.id, status: "completed", interruptions: 0)
+        let b = sessions.start(type: "free", taskID: nil)
+        sessions.finish(id: b.id, status: "abandoned", interruptions: 1)
+        XCTAssertEqual(sessions.completionRate(days: 7) ?? -1, 0.5, accuracy: 0.001)
+        // `now` far in the future: the 1-day window starts after every session -> no data -> nil
+        XCTAssertNil(sessions.completionRate(days: 1, now: .distantFuture.addingTimeInterval(-86400)))
+    }
+
     // MARK: HabitRepository
 
     func testCheckInAndStreak() {

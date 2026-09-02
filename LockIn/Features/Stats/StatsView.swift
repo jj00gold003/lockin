@@ -45,7 +45,13 @@ struct StatsView: View {
                      labelKey: "stats.today")
             statCard(value: format(app.sessionRepo.focusSeconds(since: weekStart)),
                      labelKey: "stats.week")
+            statCard(value: rateText, labelKey: "stats.completion")
         }
+    }
+
+    private var rateText: String {
+        guard let rate = app.sessionRepo.completionRate(days: 7) else { return "–" }
+        return String(format: "%.0f%%", rate * 100)
     }
 
     private var weekStart: Date {
