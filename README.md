@@ -6,13 +6,12 @@ LockIn is a free, open-source macOS app for knowledge workers and developers:
 focus sessions with real distraction blocking — distract-proof Pomodoro, tasks,
 habits, and stats. All local. Zero telemetry. Forever.
 
-<!-- demo gif placeholder: record 15s of start-focus → open blocked app → overlay appears, save as docs/assets/demo.gif -->
-
 ## ✨ Features
 
-- 🎯 **Focus & Pomodoro** — 25/5 cycles with long breaks, or unbounded free focus
-- 🛡️ **Deep Work Shield** — block distracting apps during sessions (cover overlay or hard minimize)
-- ✅ **Tasks** — link focus time to tasks automatically
+- 🎯 **Focus, Pomodoro & Countdown** — 25/5 cycles with long breaks, unbounded free focus, or a custom countdown
+- 🛡️ **Deep Work Shield** — distracting apps get their windows covered and are switched away automatically (optional hard minimize)
+- 🌍 **Website Blocking** — block domains (e.g. `youtube.com`) at the network level for every browser via a managed `/etc/hosts` section
+- ✅ **Tasks** — deadlines, notes, priorities, and automatic focus-time tracking per task
 - 🔥 **Habits** — streaks + GitHub-style heatmap
 - 📊 **Stats** — daily/weekly focus time, completion rate, distraction curve
 - 🌐 **English & 简体中文** · 📴 Works fully offline · 🚫 No telemetry
@@ -33,10 +32,13 @@ brew install --cask lockin
 
 | Permission | Why | Required? |
 |---|---|---|
-| None | App monitoring & cover blocking work out of the box | — |
+| None | App monitoring & window covering work out of the box | — |
 | Accessibility | Hard block: minimize distracting apps | Optional |
+| Administrator prompt | Website blocking edits the managed section of `/etc/hosts`. Only when you click **Apply to System**, once per change; your user content outside the managed section is never touched | Optional |
 
 Everything runs on your Mac. No network calls, no analytics, no accounts.
+Website blocking changes only the marker-wrapped LockIn section of `/etc/hosts`
+and is transparently documented in-app.
 
 ## 🛠️ Build from source
 
